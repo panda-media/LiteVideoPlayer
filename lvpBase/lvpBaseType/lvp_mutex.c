@@ -6,8 +6,14 @@
 
 LvpMutexRef lvp_mutex_create()
 {
+
     LvpMutexRef mutex;
-    mutex.ptr = CreateSemaphoreA(NULL, 0, 1, "");
+    mutex.ptr = CreateSemaphoreA(NULL, 1, 1, 0);
+    HANDLE seamph2= CreateSemaphoreA(NULL, 1, 1, 0);
+    WaitForSingleObject(mutex.ptr, INFINITE);
+    WaitForSingleObject(seamph2, INFINITE);
+
+    WaitForSingleObject(mutex.ptr, INFINITE);
     return mutex;
 }
 
