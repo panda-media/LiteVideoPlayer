@@ -27,7 +27,7 @@ LVPList *lvp_list_alloc(){
     return list;
 }
 
-void *lvp_list_free(LVPList *list){
+void lvp_list_free(LVPList *list){
     assert(list);
     LVPListEntry *entry = list->entrys;
     while ( entry != NULL)
@@ -111,5 +111,5 @@ int lvp_list_remove_at(LVPList *list, uint64_t index){
         index --;
         pre = e;
     }
-    LVP_E_NO_MEDIA;
+    return LVP_E_NO_MEDIA;
 }

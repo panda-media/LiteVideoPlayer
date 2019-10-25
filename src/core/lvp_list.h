@@ -17,7 +17,7 @@ typedef struct lvp_list{
 
 LVPList *lvp_list_alloc();
 
-void *lvp_list_free(LVPList *list);
+void lvp_list_free(LVPList *list);
 
 int lvp_list_add(LVPList *list, void *data, void *usr_data,lvp_custom_free cfree,LVP_BOOL need_free);
 
