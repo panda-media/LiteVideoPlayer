@@ -16,6 +16,7 @@ int main(){
     ret = lvp_str_dump_with_size(src,&dst,strlen(src2)); 
     test_cond("lvp dum str with size sizeof(src2)",ret == LVP_OK && dst != NULL && !strcmp(dst,src2));
     lvp_mem_free(dst);
+    test_report();
 
     return 0;
 }
