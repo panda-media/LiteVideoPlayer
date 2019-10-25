@@ -61,3 +61,5 @@ dkms.conf
 .vscode/
 build/
 deps/*
+/lvpBase/ffmpeg
+/lvpBase/lvpBaseType/*.filters
