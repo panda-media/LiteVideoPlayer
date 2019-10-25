@@ -4,20 +4,14 @@
 #ifdef WINDOWS_SYSTEM
 #include <Windows.h>
 
-LvpMutexRef lvp_mutex_create()
+LVPMutex lvp_mutex_create()
 {
-
-    LvpMutexRef mutex;
-    mutex.ptr = CreateSemaphoreA(NULL, 1, 1, 0);
-    HANDLE seamph2= CreateSemaphoreA(NULL, 1, 1, 0);
-    WaitForSingleObject(mutex.ptr, INFINITE);
-    WaitForSingleObject(seamph2, INFINITE);
-
-    WaitForSingleObject(mutex.ptr, INFINITE);
+    LVPMutex mutex;
+    mutex.ptr = CreateSemaphoreA(NULL, 1, 1, LVP_NULL);
     return mutex;
 }
 
-LVP_BOOL lvp_mutex_close(LvpMutexRef mutex)
+LVP_BOOL lvp_mutex_free(LVPMutex mutex)
 {
     if (mutex.ptr == LVP_NULL)
     {
@@ -28,38 +22,101 @@ LVP_BOOL lvp_mutex_close(LvpMutexRef mutex)
     return ret;
 }
 
-LVP_BOOL lvp_mutex_lock(LvpMutexRef mutex)
+LVP_BOOL lvp_mutex_lock(LVPMutex mutex)
 {
     if (mutex.ptr == LVP_NULL)
     {
         return LVP_FALSE;
     }
-    return WAIT_OBJECT_0 == WaitForSingleObject(mutex.ptr, INFINITE);
+    return WAIT_OBJECT_0 == WaitForSingleObject(mutex.ptr, INFINITE) ? LVP_TRUE : LVP_FALSE;
 }
 
-LVP_BOOL lvp_mutex_try_lock(LvpMutexRef mutex)
+LVP_BOOL lvp_mutex_try_lock(LVPMutex mutex)
 {
     if (mutex.ptr == LVP_NULL)
     {
         return LVP_FALSE;
     }
-    return WAIT_OBJECT_0 == WaitForSingleObject(mutex.ptr, 0);
+    return WAIT_OBJECT_0 == WaitForSingleObject(mutex.ptr, 0) ? LVP_TRUE : LVP_FALSE;
 }
 
-LVP_BOOL lvp_mutex_unlock(LvpMutexRef mutex)
+LVP_BOOL lvp_mutex_unlock(LVPMutex mutex)
 {
     if (mutex.ptr == LVP_NULL)
     {
         return LVP_FALSE;
     }
-    return ReleaseMutex(mutex.ptr);
+
+    return 0 != ReleaseSemaphore(mutex.ptr, 1, LVP_NULL) ? LVP_TRUE : LVP_FALSE;
 }
 
-#else
-#ifdef DEBUG
-
-#endif // DEBUG
 
 #endif // WINDOWS_SYSTEM
+
+#ifdef __linux__
+
+#include <semaphore.h>
+
+LVPMutex lvp_mutex_create()
+{
+    LVPMutex mutex;
+    mutex.ptr = malloc(sizeof(sem_t));
+    if (0 == sem_init(mutex.ptr, 0, 1))
+    {
+        return LVP_TRUE;
+    }
+
+    free(mutex.ptr);
+    mutex.ptr = LVP_NULL;
+
+    return LVP_FALSE;
+}
+
+LVP_BOOL lvp_mutex_free(LVPMutex mutex)
+{
+    if (mutex.ptr == LVP_NULL)
+    {
+        return LVP_FALSE;
+    }
+
+    if (0 == sem_destroy(mutex.ptr))
+    {
+        free(mutex.ptr);
+        mutex.ptr = LVP_NULL;
+        return LVP_TRUE;
+    }
+
+    return LVP_FALSE;
+}
+
+LVP_BOOL lvp_mutex_lock(LVPMutex mutex)
+{
+    if (mutex.ptr == LVP_NULL)
+    {
+        return LVP_FALSE;
+    }
+    return 0 == sem_wait(mutex.ptr) ? LVP_TRUE : LVP_FALSE;
+}
+
+LVP_BOOL lvp_mutex_try_lock(LVPMutex mutex)
+{
+    if (mutex.ptr == LVP_NULL)
+    {
+        return LVP_FALSE;
+    }
+
+    return 0 == sem_trywait(mutex.ptr) ? LVP_TRUE : LVP_FALSE;
+}
+
+LVP_BOOL lvp_mutex_unlock(LVPMutex mutex)
+{
+    if (mutex.ptr == LVP_NULL)
+    {
+        return LVP_FALSE;
+    }
+    return 0 == sem_post(mutex.ptr) ? LVP_TRUE : LVP_FALSE;
+}
+#endif // __linux__
+
 
 

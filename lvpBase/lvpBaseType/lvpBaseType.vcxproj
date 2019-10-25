@@ -20,11 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lvp_baseTypes.h" />
+    <ClInclude Include="lvp_list.h" />
     <ClInclude Include="lvp_mutex.h" />
     <ClInclude Include="lvp_platform.h" />
+    <ClInclude Include="lvp_stack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lvp_mutex.c" />
+    <ClCompile Include="lvp_stack.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -107,7 +110,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
