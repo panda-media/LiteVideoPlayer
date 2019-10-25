@@ -6,8 +6,9 @@
 extern "C"
 {
 
-#include <lvpBaseType/lvp_mutex.h>
-#include <lvpBaseType/lvp_stack.h>
+#include <lvp_mutex.h>
+#include <lvp_stack.h>
+
 }
 
 #include <vector>

@@ -58,3 +58,6 @@ dkms.conf
 /lvpBase/lvpBase/lvpBase.vcxproj.user
 /lvpBase/lvpBase/Debug
 /lvpBase/.vs
+.vscode/
+build/
+deps/*

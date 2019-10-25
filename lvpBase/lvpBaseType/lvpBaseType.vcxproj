@@ -19,16 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lvp_baseTypes.h" />
-    <ClInclude Include="lvp_mutex.h" />
-    <ClInclude Include="lvp_platform.h" />
-    <ClInclude Include="lvp_queue.h" />
-    <ClInclude Include="lvp_stack.h" />
+    <ClInclude Include="..\..\src\core\lvp.h" />
+    <ClInclude Include="..\..\src\core\lvp_array.h" />
+    <ClInclude Include="..\..\src\core\lvp_config.h" />
+    <ClInclude Include="..\..\src\core\lvp_core.h" />
+    <ClInclude Include="..\..\src\core\lvp_define.h" />
+    <ClInclude Include="..\..\src\core\lvp_error.h" />
+    <ClInclude Include="..\..\src\core\lvp_linux_config.h" />
+    <ClInclude Include="..\..\src\core\lvp_list.h" />
+    <ClInclude Include="..\..\src\core\lvp_mem.h" />
+    <ClInclude Include="..\..\src\core\lvp_mutex.h" />
+    <ClInclude Include="..\..\src\core\lvp_queue.h" />
+    <ClInclude Include="..\..\src\core\lvp_stack.h" />
+    <ClInclude Include="..\..\src\core\lvp_win32_config.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lvp_mutex.c" />
-    <ClCompile Include="lvp_queue.c" />
-    <ClCompile Include="lvp_stack.c" />
+    <ClCompile Include="..\..\src\core\lvp.c" />
+    <ClCompile Include="..\..\src\core\lvp_array.c" />
+    <ClCompile Include="..\..\src\core\lvp_core.c" />
+    <ClCompile Include="..\..\src\core\lvp_list.c" />
+    <ClCompile Include="..\..\src\core\lvp_mutex.c" />
+    <ClCompile Include="..\..\src\core\lvp_queue.c" />
+    <ClCompile Include="..\..\src\core\lvp_stack.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -102,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(solutiondir)ffmpeg\windows\include;$(solutiondir)..\src\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
