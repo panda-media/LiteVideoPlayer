@@ -5,5 +5,6 @@
 #define LVP_FALSE 0
 #define LVP_TRUE 1
 #define LVP_NULL ((void *)0)
+#define LVP_LP_NULL ((void **)0)
 
 #endif

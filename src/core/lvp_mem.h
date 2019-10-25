@@ -29,8 +29,8 @@ static inline void *lvp_mem_mallocz(size_t t){
 }
 
 /**
- * @description: free memory
- * @param data free data
+ * @description: lvp_mem_free memory
+ * @param data lvp_mem_free data
  */
 static inline void lvp_mem_free(void *data){
     av_free(data);

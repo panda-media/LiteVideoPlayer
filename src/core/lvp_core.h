@@ -7,11 +7,12 @@
 
 
 /**
- *lvp custom free use to some context free self
- *@param data free object 
+ *lvp custom lvp_mem_free use to some context lvp_mem_free self
+ *@param data lvp_mem_free object 
  *@param usr_data usr data
  */
 typedef void(*lvp_custom_free)(void *data,void *usr_data);
+
 
 #include "lvp_mem.h"
 
