@@ -11,8 +11,8 @@ inline static void lvp_list_entry_free(LVPListEntry **entry_ptr){
         return;
     }
    if(entry->need_free){
-       if(entry->lvp_mem_free){
-           entry->lvp_mem_free(entry->data,entry->usr_data);
+       if(entry->free){
+           entry->free(entry->data,entry->usr_data);
        }
        else{
            lvp_mem_free(entry->data);
@@ -38,7 +38,9 @@ void *lvp_list_free(LVPList *list){
     lvp_mem_free(list);
 }
 
-int lvp_list_add(LVPList *list, void *data, void *usr_data,lvp_custom_free cfree,int need_free){
+
+
+int lvp_list_add(LVPList * list, void * data, void * usr_data, lvp_custom_free cfree, LVP_BOOL need_free) {
     assert(list);
     assert(data);
 
@@ -47,7 +49,7 @@ int lvp_list_add(LVPList *list, void *data, void *usr_data,lvp_custom_free cfree
         return LVP_E_NO_MEM;
     }
     entry->data = data;
-    entry->lvp_mem_free = cfree;
+    entry->free = cfree;
     entry->usr_data = usr_data;
     entry->need_free = need_free;
 
