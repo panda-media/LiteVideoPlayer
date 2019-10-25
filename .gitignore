@@ -50,3 +50,11 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+/lvpBase/lvpBaseType/x64
+/lvpBase/lvpBaseType/Debug
+/lvpBase/lvpBaseType/*.user
+/lvpBase/Debug
+/lvpBase/lvpBase/x64
+/lvpBase/lvpBase/lvpBase.vcxproj.user
+/lvpBase/lvpBase/Debug
+/lvpBase/.vs
