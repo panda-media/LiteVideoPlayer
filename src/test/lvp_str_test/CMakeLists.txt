@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(list_test)
+project(str_test)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g  -Werror -Wall")
 
@@ -8,13 +8,12 @@ include_directories("../../../deps/ffmpeg/linux/include/")
 link_directories("../../../deps/ffmpeg/linux/lib/")
 
 add_executable(
-    list_test
-    ../../core/lvp_mem.h
-    ../../core/lvp_list.c
-    lvp_list_test.c
+    src_test
+    #../../core/lvp_str.c
+    str_test.c
 )
 
 target_link_libraries(
-    list_test
+    src_test
     avutil
 )
