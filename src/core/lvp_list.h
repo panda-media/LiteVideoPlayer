@@ -6,7 +6,7 @@ typedef struct lvp_list_entry{
     void                    *data; ///< data
     void                    *usr_data; ///< usr data
     int                     need_free; /// this data is need lvp_mem_free 1 for need
-    lvp_custom_free         lvp_mem_free; ///< custom lvp_mem_free func, if lvp_mem_free not NULL use this func to lvp_mem_free data
+    lvp_custom_free         free; ///< custom lvp_mem_free func, if lvp_mem_free not NULL use this func to lvp_mem_free data
     struct lvp_list_entry   *next; 
 }LVPListEntry;
 
