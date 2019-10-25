@@ -20,13 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lvp_baseTypes.h" />
-    <ClInclude Include="lvp_list.h" />
     <ClInclude Include="lvp_mutex.h" />
     <ClInclude Include="lvp_platform.h" />
+    <ClInclude Include="lvp_queue.h" />
     <ClInclude Include="lvp_stack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lvp_mutex.c" />
+    <ClCompile Include="lvp_queue.c" />
     <ClCompile Include="lvp_stack.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
