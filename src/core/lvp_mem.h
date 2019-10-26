@@ -28,6 +28,10 @@ static inline void *lvp_mem_mallocz(size_t t){
     return av_mallocz(t);
 }
 
+static inline void *lvp_mem_calloc(size_t num,size_t size){
+    return av_calloc(num,size);
+}
+
 /**
  * @description: lvp_mem_free memory
  * @param data lvp_mem_free data

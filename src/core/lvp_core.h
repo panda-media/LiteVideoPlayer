@@ -15,5 +15,6 @@ typedef void(*lvp_custom_free)(void *data,void *usr_data);
 
 
 #include "lvp_mem.h"
+#include "lvp_str.h"
 
 #endif
