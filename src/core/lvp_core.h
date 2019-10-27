@@ -13,9 +13,16 @@
  */
 typedef void(*lvp_custom_free)(void *data,void *usr_data);
 
+/**
+ * lvp custom log 
+ * @param log lvp log string
+ * @param usr_data call back usr data;
+ */
+typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 
 #include "lvp_mem.h"
 #include "lvp_str.h"
+#include "lvp_log.h"
 #include "lvp_list.h"
 #include "lvp_map.h"
 
