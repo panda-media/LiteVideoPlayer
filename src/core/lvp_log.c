@@ -1,5 +1,10 @@
 #include "lvp_log.h"
 
+#ifdef LVP_WIN32
+#include <time.h>
+#endif // LVP_WIN32
+
+
 void lvp_print(struct lvp_log *log_ctx,int level,const char *file,const char *func,int line, const char* fmt, ...){
 	char log[2048] = { 0 };
 	char log_fmt[2500] = { 0 };
@@ -15,7 +20,7 @@ void lvp_print(struct lvp_log *log_ctx,int level,const char *file,const char *fu
 	time(&t);
 
 	struct tm *time_info = localtime(&t);
-
+    
 	//log:"[D]function"
 	int func_len = (int)strlen(func);
 	memcpy(log+write_index, func, func_len);

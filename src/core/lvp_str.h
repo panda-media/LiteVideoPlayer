@@ -4,7 +4,7 @@
 #include "lvp_core.h"
 
 static inline int lvp_str_dump_with_size(const char *src, char **dst,size_t size){
-    *dst = lvp_mem_mallocz(size+1);
+    *dst = (char*)lvp_mem_mallocz(size+1);
     if(*dst == NULL){
         return LVP_E_NO_MEM;
     }

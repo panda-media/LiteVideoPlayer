@@ -5,8 +5,8 @@
 
 typedef struct
 {
-    void **data;
-    void **usrData;
+    void **datas;
+    void **usrDatas;
     lvp_custom_free* freeFuncs;
     LVP_BOOL* needFrees;
     int64_t cap;

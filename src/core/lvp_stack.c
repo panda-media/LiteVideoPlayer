@@ -152,12 +152,18 @@ LVP_BOOL lvp_stack_push_raw(LVPStack * stack, void * data)
     return lvp_stack_push(stack, data, LVP_NULL, LVP_NULL, LVP_FALSE);
 }
 
-LVP_BOOL lvp_stack_pop(LVPStack * stack, void** data, void ** usrData)
+LVP_BOOL lvp_stack_pop(LVPStack * stack)
 {
-    if (LVP_FALSE==lvp_stack_top(stack,data,usrData))
+    if (stack == LVP_NULL)
     {
         return LVP_FALSE;
     }
+
+    if (stack->top == stack->bottom)
+    {
+        return LVP_FALSE;
+    }
+
     stack->top++;
 
     return LVP_TRUE;
@@ -175,8 +181,12 @@ LVP_BOOL lvp_stack_top(LVPStack * stack, void** data, void ** usrData)
         return LVP_FALSE;
     }
 
-    *data = stack->datas[stack->top];
-    if (usrData != LVP_NULL)
+    if (LVP_LP_NULL != data)
+    {
+        *data = stack->datas[stack->top];
+    }
+
+    if (usrData != LVP_LP_NULL)
     {
         *usrData = stack->usrDatas[stack->top];
     }
