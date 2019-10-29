@@ -3,6 +3,11 @@
 
 #include "lvp_core.h"
 
+#define LVPSENDEVENT(ctl,event,data)            \
+LVPEvent *e = lvp_event_alloc((data),(event));  \
+lvp_event_control_send_event((ctl),e);         \
+lvp_event_free(e)
+
 typedef struct lvp_event{
     char *event_name;
     void *data;
