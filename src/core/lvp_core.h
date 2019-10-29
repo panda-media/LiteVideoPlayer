@@ -28,6 +28,8 @@ typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 #include "lvp_map.h"
 #include "lvp_event.h"
 #include "lvp_thread.h"
+#include "lvp_mutex.h"
+#include "lvp_semaphore.h"
 #include "lvp_module.h"
 
 #endif

@@ -3,7 +3,6 @@
 #include "lvp_core.h"
 
 #ifdef LVP_WIN32
-#include <Windows.h>
 typedef CRITICAL_SECTION lvp_mutex;
 #endif // LVP_WIN32
 #ifdef LVP_LINUX
