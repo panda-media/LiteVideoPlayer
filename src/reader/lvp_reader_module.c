@@ -83,7 +83,7 @@ static void reader_thread(void *data){
     lvp_debug(m->log,"out reader thread",NULL);
 }
 
-static int handle_open(LVPEvent *ev,void *usr_data){
+static int handle_play(LVPEvent *ev,void *usr_data){
    LVPReaderModule *m = (LVPReaderModule*)usr_data;
    if(m->input_url){
        lvp_error(m->log,"need input",NULL);
@@ -119,7 +119,7 @@ static int handle_seek(LVPEvent *ev, void *usr_data){
     LVPReaderModule *m = (LVPReaderModule*)usr_data;
 
     if(m->avctx){
-        int64_t time = (int16_t)ev->data;
+        int64_t time = *(int16_t*)ev->data;
         int64_t min_time = time - 1000000;
         int64_t max_time = time + 1000000;
         int ret = LVP_OK;
@@ -183,9 +183,9 @@ static int module_init(struct lvp_module *module,
        return ret;
    }
 
-   ret = lvp_event_control_add_listener(ctl,LVP_EVENT_OPEN,handle_open,reader);
+   ret = lvp_event_control_add_listener(ctl,LVP_EVENT_PLAY,handle_play,reader);
    if(ret){
-       lvp_error(reader->log,"add handler %s error",LVP_EVENT_OPEN);
+       lvp_error(reader->log,"add handler %s error",LVP_EVENT_PLAY);
        return ret;
    }
 

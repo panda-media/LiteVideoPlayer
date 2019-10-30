@@ -32,4 +32,79 @@ typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 #include "lvp_semaphore.h"
 #include "lvp_module.h"
 
+typedef struct lvp_core{
+    LVPList *modules;
+    LVPMap *options;
+    LVPEventControl *event_control;
+    LVPLog *log;
+
+    int status;
+    char *option_str;
+    char *input_str;
+}LVPCore;
+
+/**
+ * lvp core alloc
+ * @return NULL if error
+ */
+LVPCore* lvp_core_alloc();
+
+/**
+ * lvp core free
+ */
+void lvp_core_free(LVPCore *core);
+
+/**
+ * lvp core set url, set net or local media path
+ * @param core lvp core 
+ * @param input net or local media path eg. http://localhost:8080/vod/test.mp4 
+ *                                          d:/vod/test.mkv
+ * @return LVP_OK for success
+ */
+int lvp_core_set_url(LVPCore *core, const char *input);
+
+/**
+ * lvp core set option, set lvp options
+ * @param core lvp core
+ * @param options lvp custom options eg. "-reader myflv_reader -vrender qt_render"
+ * @return LVP_OK for success
+ */
+int lvp_core_set_option(LVPCore *core, const char *options);
+
+/**
+ * lvp core set custom log
+ * @param core lvp core
+ * @param log usr custom log func may be void(const char *log, void *usr_data);
+ */
+int lvp_core_set_custom_log(LVPCore *core,lvp_custom_log log,void *usr_data);
+
+/**
+ * lvp core play media
+ * @param core lvp core
+ * @return LVP_OK for success
+ */
+int lvp_core_play(LVPCore *core);
+
+/**
+ * lvp core pause media
+ * @param core lvp core
+ * @return LVP_OK for success
+ */
+int lvp_core_pause(LVPCore *core);
+
+/**
+ * lvp core stop media
+ * @param core lvp core
+ * @return LVP_OK for success
+ */
+int lvp_core_stop(LVPCore *core);
+
+/**
+ * lvp core seek time
+ * @param core lvp core
+ * @param pts seek time eg 1.0 second
+ * @return LVP_OK for success
+ */
+int lvp_core_seek(LVPCore *core,double pts);
+
 #endif
