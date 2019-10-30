@@ -21,6 +21,11 @@ typedef void(*lvp_custom_free)(void *data,void *usr_data);
  */
 typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 
+typedef struct lvp_log LVPLog;
+typedef struct lvp_map LVPMap;
+typedef struct lvp_event_control LVPEventControl;
+typedef struct lvp_list LVPList;
+
 #include "lvp_mem.h"
 #include "lvp_str.h"
 #include "lvp_log.h"

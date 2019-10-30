@@ -8,7 +8,7 @@ static int ff_interrupt_call(void *data){
    return 0;
 }
 
-static void reader_thread(void *data){
+static void* reader_thread(void *data){
     LVPReaderModule *m = (LVPReaderModule*)data;
     AVFormatContext *fmt = m->avctx = avformat_alloc_context();
 
@@ -24,12 +24,21 @@ static void reader_thread(void *data){
     if(ret<0){
         LVPSENDEVENT(m->ctl,LVP_EVENT_OPEN_ERROR,NULL);
         lvp_error(m->log,"avformat open input return %d",ret);
-        return ;
+        return NULL ;
     }
     lvp_mutex_lock(&m->avctx_mutex);
-    m->astream = av_find_best_stream(fmt,AVMEDIA_TYPE_AUDIO,-1,-1,NULL,0);
-    m->vstream = av_find_best_stream(fmt,AVMEDIA_TYPE_VIDEO,-1,-1,NULL,0);
-    m->sub_stream = av_find_best_stream(fmt,AVMEDIA_TYPE_SUBTITLE,-1,-1,NULL,0);
+    int best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_AUDIO,-1,-1,NULL,0);
+    if(best_index>=0)
+        m->astream = fmt->streams[best_index];
+    best_index = -1;
+    best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_VIDEO,-1,-1,NULL,0);
+    if(best_index>=0)
+        m->vstream = fmt->streams[best_index];
+    best_index = -1;
+    best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_SUBTITLE,-1,-1,NULL,0);
+    if(best_index>=0)
+        m->sub_stream = fmt->streams[best_index];
+    
     lvp_mutex_unlock(&m->avctx_mutex);
     if(m->astream){
         LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->astream->codecpar);
@@ -42,7 +51,7 @@ static void reader_thread(void *data){
     }
 
     m->is_reader_thread_run = LVP_TRUE;
-    int ret = 0;
+    ret = 0;
     AVPacket ipkt;
     LVP_BOOL need_read = LVP_TRUE;
     while (m->is_reader_thread_run)
@@ -81,11 +90,12 @@ static void reader_thread(void *data){
     av_packet_unref(&ipkt);
 
     lvp_debug(m->log,"out reader thread",NULL);
+    return NULL;
 }
 
 static int handle_play(LVPEvent *ev,void *usr_data){
    LVPReaderModule *m = (LVPReaderModule*)usr_data;
-   if(m->input_url){
+   if(!m->input_url){
        lvp_error(m->log,"need input",NULL);
        return LVP_E_NO_MEDIA;
    }
@@ -136,7 +146,7 @@ static int handle_seek(LVPEvent *ev, void *usr_data){
 static int handle_change_stream(LVPEvent *ev, void *usr_data){
     LVPReaderModule *m = (LVPReaderModule*)usr_data;
 
-    int select_index = (int)ev->data;
+    int select_index = *(int*)ev->data;
     if(m->avctx->nb_streams<=select_index || select_index < 0){
         lvp_waring(m->log,"select index error, the media only %d stream",m->avctx->nb_streams);
         return LVP_E_NO_MEDIA;
@@ -219,7 +229,7 @@ static void module_close(struct lvp_module *module){
     m->is_reader_thread_run = LVP_FALSE;
 
     if(m->reader_thread!=0){
-        lvp_thread_join(&m->reader_thread);
+        lvp_thread_join(m->reader_thread);
         m->reader_thread = 0;
     }
     if(m->avctx){

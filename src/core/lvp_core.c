@@ -63,13 +63,13 @@ static int init_core_modules(LVPCore *core){
     {
         LVPModule *m = LVPModules[i];
         if(m->type == LVP_MODULE_CORE){
-            LVPModule *tmp = (LVPModule*)lvp_mem_mallocz(sizoef(*tmp));
+            LVPModule *tmp = (LVPModule*)lvp_mem_mallocz(sizeof(*tmp));
             if(tmp==NULL){
                 return LVP_E_NO_MEM;
             }
-            memcpy(m,tmp,sizeof(tmp));
+            memcpy(tmp,m,sizeof(*tmp));
             tmp->private_data = lvp_mem_mallocz(tmp->private_data_size);
-            int ret = tmp->module_init(m,core->options,core->event_control,core->log);
+            int ret = tmp->module_init(tmp,core->options,core->event_control,core->log);
             if(ret != LVP_OK){
                 lvp_error(core->log,"init module %s error return %d",tmp->name,ret);
             }
