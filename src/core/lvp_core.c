@@ -1,4 +1,5 @@
 #include "lvp_core.h"
+#include "lvp_modules.h"
 
 LVPCore* lvp_core_alloc(){
     LVPCore *core = (LVPCore*)lvp_mem_mallocz(sizeof(*core));

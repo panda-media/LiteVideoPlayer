@@ -42,7 +42,7 @@ LVP_BOOL lvp_thread_join(lvp_thread lvpThread)
 
 LVP_BOOL lvp_thread_create(lvp_thread* thread, lvp_thread_func func, void *param)
 {
-    return 0 == pthread_create(thread, 0, func, param) ? LVP_TRUE : LVP_FALSE;
+    return 0 == pthread_create((pthread_t*)thread, 0, func, param) ? LVP_TRUE : LVP_FALSE;
 }
 LVP_BOOL lvp_thread_join(lvp_thread lvpThread)
 {

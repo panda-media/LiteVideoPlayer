@@ -28,11 +28,4 @@ typedef struct lvp_module{
 }LVPModule;
 
 
-extern LVPModule lvp_reader_module;
-
-//all  module 
-static LVPModule *LVPModules[]={
-    &lvp_reader_module,
-};
-
 #endif
