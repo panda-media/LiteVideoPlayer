@@ -159,7 +159,7 @@ static int handle_change_stream(LVPEvent *ev, void *usr_data){
 static int module_init(struct lvp_module *module, 
                                     LVPMap *options,
                                     LVPEventControl *ctl,
-                                    lvp_custom_log clog){
+                                    LVPLog *log){
    assert(module);
    assert(options); 
    assert(ctl);
@@ -169,7 +169,8 @@ static int module_init(struct lvp_module *module,
    reader->ctl = ctl;
    //set log
    reader->log = lvp_log_alloc((const char*)module->name);
-   reader->log->log_call = clog;
+   reader->log->log_call = log->log_call;
+   reader->log->usr_data = log->usr_data;
 
    int ret = lvp_mutex_create(&reader->avctx_mutex);
 

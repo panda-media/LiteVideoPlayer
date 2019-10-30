@@ -22,7 +22,7 @@ typedef struct lvp_module{
     int             (*module_init)(struct lvp_module *module, 
                                     LVPMap *options,
                                     LVPEventControl *ctl,
-                                    lvp_custom_log clog);
+                                    LVPLog *log);
     void            (*module_close)(struct lvp_module *module);
 
 }LVPModule;
