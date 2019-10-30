@@ -3,7 +3,7 @@
 
 #include "lvp_core.h"
 
-typedef void(*lvp_thread_func)(void *param);
+typedef void*(*lvp_thread_func)(void *param);
 #ifdef LVP_WIN32
 typedef void* lvp_thread;
 #endif // LVP_WIN32

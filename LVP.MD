@@ -135,7 +135,7 @@ events: module自身可能会抛出的事件
 ```
                     |--->LVP_EVENT_SET_URL
                     |
-                    |--->LVP_EVENT_OPEN
+                    |--->LVP_EVENT_PLAY
              handle |
             |------>|--->LVP_EVENT_SEEK
             |       |

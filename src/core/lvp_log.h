@@ -8,11 +8,11 @@
 #define LVP_LOG_DEBUG   200
 
 
-typedef struct lvp_log{
+struct lvp_log{
     char *ctx_name;
     void *usr_data;
     lvp_custom_log log_call;
-}LVPLog;
+};
 
 #define ilvplog(log,level,fmt,file,func,line,...) lvp_print(log,level,file,func,line,fmt,__VA_ARGS__)
 

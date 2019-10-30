@@ -13,10 +13,10 @@ typedef struct lvp_map_entry{
     struct lvp_map_entry    *next; 
 }LVPMapEntry;
 
-typedef struct lvp_map_h{
+struct lvp_map{
     int             size; ///< map max entrys, size will change when entrys.num >= size
     LVPMapEntry     **entrys; ///< map entrys
-}LVPMap;
+};
 
 
 LVPMap *lvp_map_alloc();

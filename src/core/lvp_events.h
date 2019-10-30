@@ -3,11 +3,14 @@
 
 #define LVP_EVENT_OPEN      "LVP_EVENT_OPEN"
 #define LVP_EVENT_CLOSE     "LVP_EVENT_CLOSE"
+
+#define LVP_EVENT_PLAY      "LVP_EVENT_PLAY"
 #define LVP_EVENT_STOP      "LVP_EVENT_STOP"
 #define LVP_EVENT_SET_URL   "LVP_EVENT_SET_URL"
 
 #define LVP_EVENT_SEEK      "LVP_EVENT_SEEK"
 #define LVP_EVENT_PAUSE     "LVP_EVENT_PAUSE"
+#define LVP_EVENT_RESUME    "LVP_EVENT_RESUME"
 
 #define LVP_EVENT_CHANGE_STREAM "LVP_EVENT_CHANGE_STREAM"///< user change stream
                                                         /// if media has multiple stream

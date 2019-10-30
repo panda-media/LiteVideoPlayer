@@ -25,9 +25,9 @@ typedef struct lvp_event_handler{
     LVPList *listeners;
 }LVPEventHandler;
 
-typedef struct lvp_event_control{
+struct lvp_event_control{
     LVPMap *handlers;
-}LVPEventControl;
+};
 
 
 ///
