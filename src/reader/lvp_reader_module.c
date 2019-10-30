@@ -20,7 +20,7 @@ static void reader_thread(void *data){
     //todo set option
     lvp_mutex_lock(&m->avctx_mutex);
     int ret = avformat_open_input(&fmt,m->input_url,NULL,NULL);
-    lvp_mutex_unlock(m->avctx_mutex);
+    lvp_mutex_unlock(&m->avctx_mutex);
     if(ret<0){
         LVPSENDEVENT(m->ctl,LVP_EVENT_OPEN_ERROR,NULL);
         lvp_error(m->log,"avformat open input return %d",ret);
@@ -213,7 +213,7 @@ static int module_init(struct lvp_module *module,
 }
 
 static void module_close(struct lvp_module *module){
-    LVPReaderModule *m = (LVPReaderModule*)usr_data;
+    LVPReaderModule *m = (LVPReaderModule*)module;
     m->is_interrupt = LVP_TRUE;
     m->is_reader_thread_run = LVP_FALSE;
 
