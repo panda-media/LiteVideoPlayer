@@ -1,9 +1,10 @@
 #ifndef _LVP_CORE_H_
 #define _LVP_CORE_H_
 
+#include "lvp_error.h"
 #include "lvp_config.h"
 #include "lvp_define.h"
-#include "lvp_error.h"
+#include "lvp_events.h"
 
 
 /**
@@ -25,5 +26,10 @@ typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 #include "lvp_log.h"
 #include "lvp_list.h"
 #include "lvp_map.h"
+#include "lvp_event.h"
+#include "lvp_thread.h"
+#include "lvp_mutex.h"
+#include "lvp_semaphore.h"
+#include "lvp_module.h"
 
 #endif

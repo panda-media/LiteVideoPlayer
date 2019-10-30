@@ -1,7 +1,6 @@
 #include "lvp_thread.h"
 
 #ifdef LVP_WIN32
-#include <Windows.h>
 
 LVP_BOOL lvp_thread_create(lvp_thread* thread, lvp_thread_func func, void * param)
 {
