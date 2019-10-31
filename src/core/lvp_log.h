@@ -24,23 +24,8 @@ struct lvp_log{
 
 void lvp_print(struct lvp_log *log,int level,const char *file,const char *func,int line, const char* fmt, ...);
 
-static inline LVPLog* lvp_log_alloc(const char *name){
-    LVPLog *log = (LVPLog*)lvp_mem_mallocz(sizeof(*log));
-    if(name){
-        lvp_str_dump(name,&log->ctx_name);
-    }
-    return log;
-}
+LVPLog* lvp_log_alloc(const char *name);
 
-static inline void lvp_log_free(LVPLog *log){
-    assert(log);
-    if(log->ctx_name){
-        lvp_mem_free(log->ctx_name);
-    }
-
-    log->log_call = NULL;
-    lvp_mem_free(log);
-
-}
+void lvp_log_free(LVPLog *log);
 
 #endif

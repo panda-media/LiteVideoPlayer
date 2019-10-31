@@ -10,6 +10,7 @@ link_directories("../../../deps/ffmpeg/linux/lib/")
 add_executable(
     test
     ../../core/lvp_log.c
+    ../../core/lvp_strc
     log_test.c
 )
 

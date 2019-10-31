@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(test)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
 
 include_directories("../../../deps/ffmpeg/linux/include/")
 link_directories("../../../deps/ffmpeg/linux/lib/")
@@ -17,6 +17,7 @@ add_executable(
     ../../reader/lvp_reader_module.c
     ../../core/lvp_thread.c
     ../../core/lvp_mutex.c
+    ../../core/lvp_str.c
     core_test.c
 )
 
@@ -29,4 +30,5 @@ target_link_libraries(
     avutil
     pthread
     m
+    z
 )

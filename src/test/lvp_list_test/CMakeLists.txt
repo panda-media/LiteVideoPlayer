@@ -11,6 +11,7 @@ add_executable(
     list_test
     ../../core/lvp_mem.h
     ../../core/lvp_list.c
+    ../../core/lvp_str.c
     lvp_list_test.c
 )
 
