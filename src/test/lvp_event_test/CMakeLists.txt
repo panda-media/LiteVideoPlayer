@@ -13,6 +13,7 @@ add_executable(
     ../../core/lvp_map.c
     ../../core/lvp_event.c
     ../../core/lvp_list.c
+    ../../core/lvp_str.c
     event_test.c
 )
 

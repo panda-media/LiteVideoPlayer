@@ -3,24 +3,10 @@
 
 #include "lvp_core.h"
 
-static inline int lvp_str_dump_with_size(const char *src, char **dst,size_t size){
-    *dst = (char*)lvp_mem_mallocz(size+1);
-    if(*dst == NULL){
-        return LVP_E_NO_MEM;
-    }
-    if(strlen(src) < size){
-        lvp_mem_free(*dst);
-        *dst = NULL;
-        return LVP_E_NO_MEDIA;
-    }
-    char *tmp = (char*)*dst;
-    memcpy(tmp,src,size);
-    return LVP_OK;
-}
+int lvp_str_dump_with_size(const char *src, char **dst,size_t size);
 
-static inline int lvp_str_dump(const char *src, char **dst){
-    int len = strlen(src);
-    return lvp_str_dump_with_size(src,dst,len);
-}
+int lvp_str_dump(const char *src, char **dst);
+
+int lvp_str_parse_to_options(const char *option_str, LVPMap *options);
 
 #endif
