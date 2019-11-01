@@ -4,13 +4,14 @@
 #include "lvp_core.h"
 
 typedef enum lvp_module_type{
-    LVP_MODULE_CORE,
-    LVP_MODULE_READER,
-    LVP_MODULE_PKT_FILTER,
-    LVP_MODULE_DECODER,
-    LVP_MODULE_FRAME_FILTER,
-    LVP_MODULE_RENDER
+    LVP_MODULE_CORE = 1,
+    LVP_MODULE_READER = 2,
+    LVP_MODULE_PKT_FILTER = 4,
+    LVP_MODULE_DECODER = 8,
+    LVP_MODULE_FRAME_FILTER = 0x10,
+    LVP_MODULE_RENDER = 0x20,
 }LVPModuleType;
+
 
 typedef struct lvp_module{
     uint64_t        version;
