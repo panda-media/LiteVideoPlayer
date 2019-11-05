@@ -14,6 +14,11 @@ static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     return ret;
 }
 
+static void filter_sub_module_free(LVPModule *m,void *usr_data){
+    lvp_module_close(m);
+    lvp_mem_free(m);
+}
+
 static int filter_init(struct lvp_module *module, 
                                     LVPMap *options,
                                     LVPEventControl *ctl,
@@ -47,7 +52,7 @@ static int filter_init(struct lvp_module *module,
                     lvp_module_close(c);
                     lvp_mem_free(c);
                 }
-                lvp_list_add(filter->modules,c,NULL,NULL,1);
+                lvp_list_add(filter->modules,c,NULL,filter_sub_module_free,1);
             }
         }
     }
@@ -59,6 +64,10 @@ static int filter_init(struct lvp_module *module,
 
 static void filter_close(struct lvp_module *module){
     assert(module);
+    LVPPktFilter *f = (LVPPktFilter*)module->private_data;
+    if(f->modules){
+        lvp_list_free(f->modules);
+    }
 }
 
 
