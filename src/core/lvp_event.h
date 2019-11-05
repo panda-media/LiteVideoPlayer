@@ -4,13 +4,14 @@
 #include "lvp_core.h"
 
 #define LVPSENDEVENT(ctl,event,data)            \
-LVPEvent *e = lvp_event_alloc((data),(event));  \
+LVPEvent *e = lvp_event_alloc((data),(event),LVP_FALSE);  \
 lvp_event_control_send_event((ctl),e);         \
 lvp_event_free(e)
 
 typedef struct lvp_event{
     char *event_name;
     void *data;
+    int must_handle;/// < must have handler
 }LVPEvent;
 
 typedef int(*lvp_event_call)(LVPEvent *ev, void *usr_data);
@@ -34,7 +35,8 @@ struct lvp_event_control{
 // event 
 ///
 
-LVPEvent *lvp_event_alloc(void *data, const char *name);
+//LVPEvent *lvp_event_alloc(void *data, const char *name);
+LVPEvent *lvp_event_alloc(void *data, const char *name,LVP_BOOL must_handle);
 
 void lvp_event_free(LVPEvent *ev);
 

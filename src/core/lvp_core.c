@@ -1,5 +1,4 @@
 #include "lvp_core.h"
-#include "lvp_modules.h"
 
 LVPCore* lvp_core_alloc(){
     LVPCore *core = (LVPCore*)lvp_mem_mallocz(sizeof(*core));
@@ -57,54 +56,51 @@ int lvp_core_set_custom_log(LVPCore *core,lvp_custom_log log,void *usr_data){
     return LVP_OK;
 }
 
-static LVPModule*  get_module(const char *module_name,LVPModuleType type){
-    assert(module_name);
-    assert(type);
-    int size  = sizeof(LVPModules)/sizeof(LVPModules[0]);
-    for (size_t i = 0; i < size; i++)
-    {
-        //find module
-        if(type == LVPModules[i]->type && !strcmp(module_name,LVPModules[i]->name)){
-            LVPModule *m = lvp_mem_mallocz(sizeof(LVPModule));
-            memcpy(m,LVPModules[i],sizeof(LVPModule));
-            return m;
-        }
-    }
-    return NULL;
-}
+//static LVPModule*  get_module(const char *module_name,LVPModuleType type){
+//    assert(module_name);
+//    assert(type);
+//    int size  = sizeof(LVPModules)/sizeof(LVPModules[0]);
+//    for (size_t i = 0; i < size; i++)
+//    {
+//        //find module
+//        if(type == LVPModules[i]->type && !strcmp(module_name,LVPModules[i]->name)){
+//            LVPModule *m = lvp_mem_mallocz(sizeof(LVPModule));
+//            memcpy(m,LVPModules[i],sizeof(LVPModule));
+//            return m;
+//        }
+//    }
+//    return NULL;
+//}
 
-static int init_module(LVPModule *m, LVPCore *core){
-    assert(m);
-    assert(core);
-    if(!m->module_init){
-        lvp_error(NULL,"module %s no function for init ",m->name);
-        return LVP_E_FATAL_ERROR;
-    }
-    m->private_data = lvp_mem_mallocz(m->private_data_size);
-    int ret = m->module_init(m,core->options,core->event_control,core->log);
-    if(ret != LVP_OK)
-        lvp_waring(NULL,"module %s init return %d",m->name,ret);
-    else
-        lvp_debug(NULL,"module %s init return %d",m->name,ret);
-
-    return LVP_OK;
-}
+//static int init_module(LVPModule *m, LVPCore *core){
+//    assert(m);
+//    assert(core);
+//    if(!m->module_init){
+//        lvp_error(NULL,"module %s no function for init ",m->name);
+//        return LVP_E_FATAL_ERROR;
+//    }
+//    m->private_data = lvp_mem_mallocz(m->private_data_size);
+//    int ret = m->module_init(m,core->options,core->event_control,core->log);
+//    if(ret != LVP_OK)
+//        lvp_waring(NULL,"module %s init return %d",m->name,ret);
+//    else
+//        lvp_debug(NULL,"module %s init return %d",m->name,ret);
+//
+//    return LVP_OK;
+//}
 
 
 static int init_basic_module(LVPCore *core,const char *default_module_name,
                              const char *option_key, LVPModuleType type){
     const char *module_name = lvp_map_get(core->options,option_key);
     LVPModule *module = NULL;
-    if(module_name == NULL){
-        module = get_module(default_module_name,type);
-    }else{
-        module = get_module(module_name,type);
-    }
+    module = lvp_module_get_module(module_name,type);
+
     if(!module){
         lvp_error(NULL,"can not find module %s for type %d",module_name?module_name:default_module_name,type);
         return LVP_E_NO_MEDIA;
     }
-    int ret = init_module(module,core);
+    int ret = lvp_module_init(module,core->options,core->event_control,core->log);
     if(ret != LVP_OK){
         lvp_mem_free(module);
         return ret;
@@ -118,8 +114,14 @@ static int init_core_modules(LVPCore *core){
     assert(core);
 
     //reader
-    int ret = init_basic_module(core,"LVP_READER_MODULE","reader",LVP_MODULE_CORE);
+    int ret = init_basic_module(core,"LVP_READER_MODULE","reader",LVP_MODULE_CORE|LVP_MODULE_READER);
     if(ret != LVP_OK){
+        goto error;
+    }
+
+    //pktfilter 
+    ret = init_basic_module(core,"LVP_PKT_FILTER","pkt_filter",LVP_MODULE_CORE|LVP_MODULE_PKT_FILTER);
+    if(ret!=LVP_OK){
         goto error;
     }
 
@@ -136,13 +138,12 @@ int lvp_core_play(LVPCore *core){
         return ret;
     }
     LVPSENDEVENT(core->event_control,LVP_EVENT_SET_URL,core->input_str);
-    LVPEvent *ev = lvp_event_alloc(NULL,LVP_EVENT_PLAY);
+    LVPEvent *ev = lvp_event_alloc(NULL,LVP_EVENT_PLAY,LVP_TRUE);
     ret = lvp_event_control_send_event(core->event_control,ev);
     lvp_event_free(ev);
     return ret;
     
 }
-
 int lvp_core_pause(LVPCore *core){
     assert(core);
     LVPSENDEVENT(core->event_control,LVP_EVENT_PAUSE,NULL);
@@ -165,7 +166,7 @@ int lvp_core_seek(LVPCore *core,double pts){
     assert(core);
     //make pts is micro second
     int core_pts = pts*1000*1000;
-    LVPEvent *ev = lvp_event_alloc(&core_pts,LVP_EVENT_SEEK);
+    LVPEvent *ev = lvp_event_alloc(&core_pts,LVP_EVENT_SEEK,LVP_TRUE);
     int ret = lvp_event_control_send_event(core->event_control,ev);
     lvp_event_free(ev);
     return ret;

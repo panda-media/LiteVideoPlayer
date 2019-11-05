@@ -14,10 +14,12 @@ add_executable(
     ../../core/lvp_map.c
     ../../core/lvp_event.c
     ../../core/lvp_list.c
-    ../../reader/lvp_reader_module.c
+    ../../core/lvp_module.c
     ../../core/lvp_thread.c
     ../../core/lvp_mutex.c
     ../../core/lvp_str.c
+    ../../reader/lvp_reader_module.c
+    ../../filter/lvp_pkt_filter.c
     core_test.c
 )
 

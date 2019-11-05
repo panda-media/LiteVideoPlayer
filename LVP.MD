@@ -151,12 +151,14 @@ reader----->|
               event |--->LVP_EVENT_SELECT_STREAM
                     |
                     |--->LVP_EVENT_READER_GOT_FRAME
+                    |
+                    |--->LVP_EVENT_READER_SEND_FRAME
 ```
 
 ### lvp packet filter module
 ```
              handle 
-            |------>|--->LVP_EVENT_READER_GOT_FRAME
+            |------>|--->LVP_EVENT_READER_SEND_FRAME
             |       
 filter----->|       
             |       
