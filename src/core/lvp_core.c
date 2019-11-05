@@ -46,8 +46,8 @@ int lvp_core_set_option(LVPCore *core, const char *options){
     if(ret!=LVP_OK){
         return ret;
     }
-    //todo parse option
-    return LVP_E_FATAL_ERROR;
+    ret = lvp_str_parse_to_options(options,core->options);
+    return ret;
 }
 
 int lvp_core_set_custom_log(LVPCore *core,lvp_custom_log log,void *usr_data){
@@ -57,29 +57,76 @@ int lvp_core_set_custom_log(LVPCore *core,lvp_custom_log log,void *usr_data){
     return LVP_OK;
 }
 
-static int init_core_modules(LVPCore *core){
-    assert(core);
-    int size = sizeof(LVPModules)/sizeof(LVPModules[0]);
+static LVPModule*  get_module(const char *module_name,LVPModuleType type){
+    assert(module_name);
+    assert(type);
+    int size  = sizeof(LVPModules)/sizeof(LVPModules[0]);
     for (size_t i = 0; i < size; i++)
     {
-        LVPModule *m = LVPModules[i];
-        if(m->type == LVP_MODULE_CORE){
-            LVPModule *tmp = (LVPModule*)lvp_mem_mallocz(sizeof(*tmp));
-            if(tmp==NULL){
-                return LVP_E_NO_MEM;
-            }
-            memcpy(tmp,m,sizeof(*tmp));
-            tmp->private_data = lvp_mem_mallocz(tmp->private_data_size);
-            int ret = tmp->module_init(tmp,core->options,core->event_control,core->log);
-            if(ret != LVP_OK){
-                lvp_error(core->log,"init module %s error return %d",tmp->name,ret);
-            }
-            //core 不会释放module的private
-            //但是 core会在stop时调用所有module的close方法，所有module的private data 应该在此时释放
-            lvp_list_add(core->modules,tmp,NULL,NULL,0);
+        //find module
+        if(type == LVPModules[i]->type && !strcmp(module_name,LVPModules[i]->name)){
+            LVPModule *m = lvp_mem_mallocz(sizeof(LVPModule));
+            memcpy(m,LVPModules[i],sizeof(LVPModule));
+            return m;
         }
     }
+    return NULL;
+}
+
+static int init_module(LVPModule *m, LVPCore *core){
+    assert(m);
+    assert(core);
+    if(!m->module_init){
+        lvp_error(NULL,"module %s no function for init ",m->name);
+        return LVP_E_FATAL_ERROR;
+    }
+    m->private_data = lvp_mem_mallocz(m->private_data_size);
+    int ret = m->module_init(m,core->options,core->event_control,core->log);
+    if(ret != LVP_OK)
+        lvp_waring(NULL,"module %s init return %d",m->name,ret);
+    else
+        lvp_debug(NULL,"module %s init return %d",m->name,ret);
+
     return LVP_OK;
+}
+
+
+static int init_basic_module(LVPCore *core,const char *default_module_name,
+                             const char *option_key, LVPModuleType type){
+    const char *module_name = lvp_map_get(core->options,option_key);
+    LVPModule *module = NULL;
+    if(module_name == NULL){
+        module = get_module(default_module_name,type);
+    }else{
+        module = get_module(module_name,type);
+    }
+    if(!module){
+        lvp_error(NULL,"can not find module %s for type %d",module_name?module_name:default_module_name,type);
+        return LVP_E_NO_MEDIA;
+    }
+    int ret = init_module(module,core);
+    if(ret != LVP_OK){
+        lvp_mem_free(module);
+        return ret;
+    }
+    //所有module只负责释放结构体，module自己应该遵循习惯通过close自己释放private data 
+    lvp_list_add(core->modules,module,NULL,NULL,1);
+    return LVP_OK;
+}
+
+static int init_core_modules(LVPCore *core){
+    assert(core);
+
+    //reader
+    int ret = init_basic_module(core,"LVP_READER_MODULE","reader",LVP_MODULE_CORE);
+    if(ret != LVP_OK){
+        goto error;
+    }
+
+    return LVP_OK;
+
+    error:
+        return ret;
 }
 
 int lvp_core_play(LVPCore *core){
