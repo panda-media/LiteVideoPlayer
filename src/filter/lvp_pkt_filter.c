@@ -14,7 +14,8 @@ static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     return ret;
 }
 
-static void filter_sub_module_free(LVPModule *m,void *usr_data){
+static void filter_sub_module_free(void *data,void *usr_data){
+    LVPModule *m = (LVPModule*)data;
     lvp_module_close(m);
     lvp_mem_free(m);
 }
