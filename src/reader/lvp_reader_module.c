@@ -81,9 +81,14 @@ static void* reader_thread(void *data){
             }
             m->is_reader_thread_run = LVP_FALSE;
         }
-        LVPEvent *ev = lvp_event_alloc(&ipkt,LVP_EVENT_READER_GOT_FRAME);
+        //for submodule use
+        LVPSENDEVENT(m->ctl,LVP_EVENT_READER_GOT_FRAME,&ipkt);
+
+        //for other core module use
+        LVPEvent *ev = lvp_event_alloc(&ipkt,LVP_EVENT_READER_SEND_FRAME,LVP_TRUE);
         int e_ret = lvp_event_control_send_event(m->ctl,ev);
         need_read = e_ret == LVP_OK?LVP_TRUE:LVP_FALSE;
+
         lvp_event_free(ev);
     }
 
@@ -246,7 +251,7 @@ static void module_close(struct lvp_module *module){
 LVPModule lvp_reader_module = {
     .version = lvp_version,
     .name = "LVP_READER_MODULE",
-    .type = LVP_MODULE_CORE,
+    .type = LVP_MODULE_CORE|LVP_MODULE_READER,
     .private_data_size = sizeof(LVPReaderModule),
     .private_data = NULL,
     .module_init = module_init,

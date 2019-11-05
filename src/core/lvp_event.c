@@ -1,9 +1,10 @@
 #include "lvp_event.h"
 
 
-LVPEvent *lvp_event_alloc(void *data, const char *name){
+LVPEvent *lvp_event_alloc(void *data, const char *name,LVP_BOOL must_handle){
     LVPEvent *ev = (LVPEvent*)lvp_mem_mallocz(sizeof(*ev));
     ev->data = data;
+    ev->must_handle = must_handle;
     lvp_str_dump(name,&ev->event_name);
     return ev;
 }
@@ -102,7 +103,9 @@ int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
     LVPEventHandler *h = lvp_map_get(ctl->handlers,ev->event_name);
     //no handler find
     if(!h){
-        lvp_waring(NULL,"no handler for %s",ev->event_name);
+        if(ev->must_handle == 1){
+            lvp_waring(NULL,"no handler for %s",ev->event_name);
+        }
         return LVP_E_NO_MEDIA;
     }
     LVPListEntry *listener_entry = h->listeners->entrys;

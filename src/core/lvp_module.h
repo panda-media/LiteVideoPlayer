@@ -28,5 +28,48 @@ typedef struct lvp_module{
 
 }LVPModule;
 
+/**
+ * get module with type and module name
+ * this function create new module so you can use this return 
+ * @param module_name module name, if name = NULL will return first module the type you pass
+ * @param type what type you want, must pass
+ * @return NULL for not find
+ */
+LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type);
+
+/**
+ * init module
+ * @param module module you want init
+ * @param options
+ * @param ctl module event control
+ * @param log
+ * @return LVP_OK for success
+ */
+int lvp_module_init(LVPModule *module,LVPMap *options, LVPEventControl *ctl, LVPLog *log);
+
+/**
+ * iterate module , but NOT use it 
+ * you MUST use lvp_module_create_module to create you module
+ * eg.
+ * void *opaque = NULL;
+ * LVPModuel *my_module = NULL;
+ * for(LVPModule *m = lvp_module_iterate(&opaque);m!=NULL;){
+ *      if(!strcmp(m->name,"MY_MODULE_NAME")){
+ *          my_module = lvp_module_create_module(m);
+ *      } 
+ * }
+ * //then use it
+ * 
+ */
+LVPModule* lvp_module_iterate(void **opaque);
+
+/**
+ * create new module 
+ * @return NULL for no memory
+ */
+LVPModule* lvp_module_create_module(LVPModule *m);
+
+void lvp_module_close(LVPModule *m);
+
 
 #endif
