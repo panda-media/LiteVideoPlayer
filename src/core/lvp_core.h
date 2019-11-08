@@ -31,6 +31,8 @@ typedef struct lvp_list LVPList;
 #include "lvp_log.h"
 #include "lvp_list.h"
 #include "lvp_map.h"
+#include "lvp_queue.h"
+#include "lvp_stack.h"
 #include "lvp_event.h"
 #include "lvp_thread.h"
 #include "lvp_mutex.h"

@@ -18,8 +18,11 @@ add_executable(
     ../../core/lvp_thread.c
     ../../core/lvp_mutex.c
     ../../core/lvp_str.c
+    ../../core/lvp_queue.c
+
     ../../reader/lvp_reader_module.c
     ../../filter/lvp_pkt_filter.c
+    ../../cache/lvp_cache_module.c
     core_test.c
 )
 
