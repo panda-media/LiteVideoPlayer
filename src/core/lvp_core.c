@@ -128,11 +128,17 @@ static int init_core_modules(LVPCore *core){
         goto error;
     }
 
+    ret = init_basic_module(core,"LVP_FRAME_FILTER","frame_filter",LVP_MODULE_CORE|LVP_MODULE_FRAME_FILTER);
+
     //pkt cache
     ret = init_basic_module(core,"LVP_AUDIO_PKT_CACHE",NULL,LVP_MODULE_CORE);
 
     //pkt cache
     ret = init_basic_module(core,"LVP_VIDEO_PKT_CACHE",NULL,LVP_MODULE_CORE);
+
+    ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
+
+    ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
     ret = init_basic_module(core,"LVP_AUDIO_DECODER","audio_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 

@@ -4,6 +4,7 @@
 
 extern LVPModule lvp_reader_module;
 extern LVPModule lvp_pkt_filter;
+extern LVPModule lvp_frame_filter;
 extern LVPModule lvp_audio_pkt_cache_module;
 extern LVPModule lvp_video_pkt_cache_module;
 extern LVPModule lvp_audio_frame_cache_module;
@@ -15,6 +16,7 @@ extern LVPModule lvp_video_decoder;
 static LVPModule *LVPModules[]={
     &lvp_reader_module,
     &lvp_pkt_filter,
+    &lvp_frame_filter,
     &lvp_audio_pkt_cache_module,
     &lvp_video_pkt_cache_module,
     &lvp_audio_frame_cache_module,

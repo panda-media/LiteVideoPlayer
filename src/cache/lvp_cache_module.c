@@ -18,7 +18,7 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);
     if(size >= cache->max_size){
-        printf("CACHE FULL\n");
+        //printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
 
@@ -44,7 +44,7 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);
     if(size==0){
-        printf("CACHE FULL\n");
+       // printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
     AVPacket *p = NULL;

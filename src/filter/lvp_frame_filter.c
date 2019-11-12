@@ -1,0 +1,83 @@
+#include "lvp_frame_filter.h"
+
+
+static void filter_sub_module_free(void *data,void *usr_data){
+    LVPModule *m = (LVPModule*)data;
+    lvp_module_close(m);
+    lvp_mem_free(m);
+}
+
+static int handle_frame(LVPEvent *ev,void *usr_data){
+    assert(ev);
+    LVPFrameFilter *f = (LVPFrameFilter*)usr_data;
+
+    //for sub module use
+    LVPSENDEVENT(f->ctl,LVP_EVENT_FILTER_GOT_FRAME,ev->data);
+
+    //for other core module use
+    LVPEvent *must_handle_ev = lvp_event_alloc(ev->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
+    lvp_event_control_send_event(f->ctl,must_handle_ev);
+    
+    return LVP_OK;
+}
+
+
+static int filter_init(struct lvp_module *module, 
+                                    LVPMap *options,
+                                    LVPEventControl *ctl,
+                                    LVPLog *log){
+    assert(module);
+    assert(ctl);
+
+    LVPFrameFilter *f = (LVPFrameFilter*)module->private_data;
+    f->log = lvp_log_alloc(module->name);
+    f->log->log_call = log->log_call;
+    f->log->usr_data = log->usr_data;
+
+    f->ctl = ctl;
+
+    int ret = lvp_event_control_add_listener(ctl,LVP_EVENT_DECODER_SEND_FRAME,handle_frame,f);
+    if(ret != LVP_OK){
+        lvp_error(f->log,"add listener error",NULL);
+        return LVP_E_FATAL_ERROR;
+    }
+
+    //init sub module
+    f->modules = lvp_list_alloc();
+    void *op = NULL;
+    for (LVPModule *m = NULL; (m = lvp_module_iterate(&op)) != NULL; )
+    {
+        if(m->type == LVP_MODULE_FRAME_FILTER){
+            LVPModule *c = lvp_module_create_module(m);
+            if(c!=NULL){
+                int ret = lvp_module_init(c,options,ctl,log);
+                if(ret != LVP_OK){
+                    lvp_module_close(c);
+                    lvp_mem_free(c);
+                }
+                lvp_list_add(f->modules,c,NULL,filter_sub_module_free,1);
+            }
+        }
+    }
+    
+    return LVP_OK;
+
+}
+
+static void filter_close(struct lvp_module *module){
+    assert(module);
+    LVPFrameFilter *f = (LVPFrameFilter*)module->private_data;
+    if(f->modules){
+        lvp_list_free(f->modules);
+    }
+}
+
+LVPModule lvp_frame_filter = {
+    .version = lvp_version,
+    .name = "LVP_FRAME_FILTER",
+    .type = LVP_MODULE_CORE|LVP_MODULE_FRAME_FILTER,
+    .private_data_size = sizeof(LVPFrameFilter),
+    .private_data = NULL,
+    .module_init = filter_init,
+    .module_close = filter_close,
+};

@@ -22,6 +22,7 @@ add_executable(
 
     ../../reader/lvp_reader_module.c
     ../../filter/lvp_pkt_filter.c
+    ../../filter/lvp_frame_filter.c
     ../../cache/lvp_cache_module.c
     ../../decoder/lvp_decoder.c
     core_test.c
