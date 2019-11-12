@@ -41,13 +41,13 @@ static void* reader_thread(void *data){
     
     lvp_mutex_unlock(&m->avctx_mutex);
     if(m->astream){
-        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->astream->codecpar);
+        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->astream);
     }
     if(m->vstream){
-        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->vstream->codecpar);
+        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->vstream);
     }
     if(m->sub_stream){
-        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->sub_stream->codecpar);
+        LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->sub_stream);
     }
 
     m->is_reader_thread_run = LVP_TRUE;
