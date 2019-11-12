@@ -115,7 +115,7 @@ int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
         LVPEventListener *l = (LVPEventListener*)listener_entry->data;
         int status = l->call(ev,l->usr_data);
         if(status != LVP_OK){
-            lvp_waring(NULL,"listener return status %d",status);
+            lvp_waring(NULL,"event %s listener return status %d",ev->event_name,status);
         }
         ret |= status;
         listener_entry = listener_entry->next;

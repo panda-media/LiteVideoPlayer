@@ -97,6 +97,7 @@ static int init_basic_module(LVPCore *core,const char *default_module_name,
     if(option_key != NULL){
         module_name = lvp_map_get(core->options,option_key);
     }
+    module_name = module_name == NULL ? default_module_name : module_name;
     module = lvp_module_get_module(module_name,type);
     if(!module){
         lvp_error(NULL,"can not find module %s for type %d",module_name?module_name:default_module_name,type);
@@ -132,6 +133,10 @@ static int init_core_modules(LVPCore *core){
 
     //pkt cache
     ret = init_basic_module(core,"LVP_VIDEO_PKT_CACHE",NULL,LVP_MODULE_CORE);
+
+    ret = init_basic_module(core,"LVP_AUDIO_DECODER","audio_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
+
+    ret = init_basic_module(core,"LVP_VIDEO_DECODER","video_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 
     return LVP_OK;
 

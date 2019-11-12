@@ -8,6 +8,8 @@ extern LVPModule lvp_audio_pkt_cache_module;
 extern LVPModule lvp_video_pkt_cache_module;
 extern LVPModule lvp_audio_frame_cache_module;
 extern LVPModule lvp_video_frame_cache_module;
+extern LVPModule lvp_audio_decoder;
+extern LVPModule lvp_video_decoder;
 
 //all  module 
 static LVPModule *LVPModules[]={
@@ -17,5 +19,7 @@ static LVPModule *LVPModules[]={
     &lvp_video_pkt_cache_module,
     &lvp_audio_frame_cache_module,
     &lvp_video_frame_cache_module,
+    &lvp_audio_decoder,
+    &lvp_video_decoder,
 };
 #endif

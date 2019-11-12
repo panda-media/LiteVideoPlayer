@@ -29,6 +29,7 @@ typedef struct lvp_list LVPList;
 #include "lvp_mem.h"
 #include "lvp_str.h"
 #include "lvp_log.h"
+#include "lvp_time.h"
 #include "lvp_list.h"
 #include "lvp_map.h"
 #include "lvp_queue.h"

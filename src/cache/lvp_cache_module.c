@@ -15,10 +15,6 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     if(cache->handle_stream->index != pkt->stream_index){
         return LVP_OK;
     }
-    if(pkt->stream_index == 0){
-        printf("video \n");
-    }
-
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);
     if(size >= cache->max_size){
@@ -41,13 +37,21 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
 
 static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
-    int64_t size = lvp_queue_size(cache->data,&size);
+    int* type = (int*)ev->data;
+    if(*type != cache->media_type){
+        return LVP_OK;
+    }
+    int64_t size = 0;
+    lvp_queue_size(cache->data,&size);
     if(size==0){
         printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
     AVPacket *p = NULL;
-    lvp_queue_front(cache->data,(void **)&p,NULL);
+    LVP_BOOL ret = lvp_queue_front(cache->data,(void **)&p,NULL);
+    if(ret == LVP_FALSE){
+        return LVP_E_FATAL_ERROR;
+    }
     AVPacket *ref = av_packet_clone(p);
     ev->data = ref;
     lvp_queue_pop(cache->data);
