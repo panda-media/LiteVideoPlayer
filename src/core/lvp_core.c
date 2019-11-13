@@ -138,7 +138,7 @@ static int init_core_modules(LVPCore *core){
 
     ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
-    ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
+    ret = init_basic_module(core,"LVP_AUDIO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
     ret = init_basic_module(core,"LVP_AUDIO_DECODER","audio_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 

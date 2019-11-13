@@ -13,7 +13,7 @@ void lvp_event_free(LVPEvent *ev){
     if(ev->event_name){
         lvp_mem_free(ev->event_name);
     }
-    free(ev);
+    lvp_mem_free(ev);
 }
 
 ///

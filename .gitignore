@@ -63,3 +63,5 @@ build/
 deps/*
 /lvpBase/ffmpeg
 /lvpBase/lvpBaseType/*.filters
+/.vs
+/src/test/lvp_core_test/.vs

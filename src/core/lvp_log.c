@@ -4,7 +4,7 @@
 #include <time.h>
 #endif // LVP_WIN32
 
-static int lvp_log_level = LVP_LOG_DEBUG;
+static int lvp_log_level = LVP_LOG_ERROR;
 
 void lvp_log_set_level(int level){
 	lvp_log_level = level;
@@ -30,7 +30,7 @@ void lvp_log_free(LVPLog *log){
 }
 
 void lvp_print(struct lvp_log *log_ctx,int level,const char *file,const char *func,int line, const char* fmt, ...){
-	if(level < lvp_log_level){
+	if(level > lvp_log_level){
 		return;
 	}
 	char log[2048] = { 0 };
