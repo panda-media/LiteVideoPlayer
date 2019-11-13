@@ -10,7 +10,6 @@ static void cache_custom_frame_free(void *data, void *usrdata){
 
 static int handle_pkt(LVPEvent *ev, void *usr_data){
     LVPCache *cache = (LVPCache*)usr_data;
-
     AVPacket *pkt = (AVPacket*)ev->data;
     if(cache->handle_stream->index != pkt->stream_index){
         return LVP_OK;
@@ -18,9 +17,9 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);
     if(size >= cache->max_size){
-        printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
+	//printf("cache type:%d size:%ld\n", cache->media_type, size);
 
     AVPacket *refpkt =  av_packet_clone(ev->data);
     if(refpkt == NULL){
@@ -44,12 +43,15 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);
     if(size==0){
-        printf("CACHE FULL\n");
+       // printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
     AVPacket *p = NULL;
     LVP_BOOL ret = lvp_queue_front(cache->data,(void **)&p,NULL);
-    if(ret == LVP_FALSE){
+    if(ret == LVP_FALSE || p == NULL){
+        return LVP_E_FATAL_ERROR;
+    }
+    if(p->pts<0){
         return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);
@@ -61,6 +63,12 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
 
 static int handle_frame(LVPEvent *ev, void *usr_data){
     LVPCache *cache = (LVPCache*)usr_data;
+
+	AVFrame* f = (AVFrame*)ev->data;
+	int type = f->width > 0 ? AVMEDIA_TYPE_VIDEO : AVMEDIA_TYPE_AUDIO;
+	if (cache->media_type != type) {
+		return LVP_OK;
+	}
 
     int64_t size = 0;
     lvp_queue_size(cache->data,&size);

@@ -24,8 +24,12 @@ static void* reader_thread(void *data){
     if(ret<0){
         LVPSENDEVENT(m->ctl,LVP_EVENT_OPEN_ERROR,NULL);
         lvp_error(m->log,"avformat open input return %d",ret);
-        return NULL ;
+		goto rerror;
     }
+	ret = avformat_find_stream_info(fmt, NULL);
+	if (ret < 0) {
+		goto rerror;
+	}
     lvp_mutex_lock(&m->avctx_mutex);
     int best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_AUDIO,-1,-1,NULL,0);
     if(best_index>=0)
@@ -54,11 +58,16 @@ static void* reader_thread(void *data){
     ret = 0;
     AVPacket ipkt;
     LVP_BOOL need_read = LVP_TRUE;
+
+	//for submodule use
+	LVPEvent* sub_ev = lvp_event_alloc(&ipkt, LVP_EVENT_READER_GOT_FRAME, LVP_FALSE);
+
+    //for other core module use
+    LVPEvent *ev = lvp_event_alloc(&ipkt,LVP_EVENT_READER_SEND_FRAME,LVP_TRUE);
     while (m->is_reader_thread_run)
     {
         if (need_read)
         {
-            av_packet_unref(&ipkt);
             lvp_mutex_lock(&m->avctx_mutex);
             ret = av_read_frame(fmt,&ipkt);
             lvp_mutex_unlock(&m->avctx_mutex);
@@ -66,34 +75,46 @@ static void* reader_thread(void *data){
         }
 
         //not select stream
-        if(ipkt.stream_index != m->astream->index &&
-            ipkt.stream_index != m->vstream->index &&
-            ipkt.stream_index != m->sub_stream->index){
+		int select_stream = 0;
+		if (m->astream && ipkt.stream_index == m->astream->index) {
+			select_stream = 1;
+		}
+		if (m->vstream && ipkt.stream_index == m->vstream->index) {
+			select_stream = 1;
+		}
+		if (m->sub_stream && ipkt.stream_index == m->sub_stream->index) {
+			select_stream = 1;
+		}
+		if (select_stream == 0) {
             need_read = LVP_TRUE;
-            continue;
-        }
+			continue;
+		}
         
         if(ret<0){
             if(ret == AVERROR_EOF){
                 LVPSENDEVENT(m->ctl,LVP_EVENT_READER_EOF,NULL);
+                printf("EOF\n");
             }else{
                 LVPSENDEVENT(m->ctl,LVP_EVENT_READER_ERROR,NULL);
             }
             m->is_reader_thread_run = LVP_FALSE;
         }
-        //for submodule use
-        LVPSENDEVENT(m->ctl,LVP_EVENT_READER_GOT_FRAME,&ipkt);
 
-        //for other core module use
-        LVPEvent *ev = lvp_event_alloc(&ipkt,LVP_EVENT_READER_SEND_FRAME,LVP_TRUE);
-        int e_ret = lvp_event_control_send_event(m->ctl,ev);
+        //LVPSENDEVENT(m->ctl,LVP_EVENT_READER_GOT_FRAME,&ipkt);
+		lvp_event_control_send_event(m->ctl, sub_ev);
+
+		int e_ret = lvp_event_control_send_event(m->ctl, ev);
+
         need_read = e_ret == LVP_OK?LVP_TRUE:LVP_FALSE;
+		if(e_ret == LVP_OK)
+			av_packet_unref(&ipkt);
 
-        lvp_event_free(ev);
     }
 
     av_packet_unref(&ipkt);
+    lvp_event_free(ev);
 
+	rerror:
     lvp_debug(m->log,"out reader thread",NULL);
     return NULL;
 }

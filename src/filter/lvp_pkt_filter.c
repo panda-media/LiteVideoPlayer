@@ -10,6 +10,7 @@ static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     //for other core module use
     LVPEvent *must_handle_ev = lvp_event_alloc(ev->data,LVP_EVENT_FILTER_SEND_PKT,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
+	lvp_event_free(must_handle_ev);
     
     return ret;
 }

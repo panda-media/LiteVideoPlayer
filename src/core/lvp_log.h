@@ -28,4 +28,6 @@ LVPLog* lvp_log_alloc(const char *name);
 
 void lvp_log_free(LVPLog *log);
 
+void lvp_log_set_level(int level);
+
 #endif

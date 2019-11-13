@@ -129,11 +129,13 @@ static void* decoder_thread(void *data){
         ret = avcodec_send_packet(d->avctx,d->ipkt);
         if(ret<0&&ret!=AVERROR(EAGAIN)){
             lvp_error(d->log,"send packet error %d",ret);
+			av_packet_free(&d->ipkt);
             break;
         }
         if(ret == AVERROR(EAGAIN)){
             need_req = 0;
         }else{
+			av_packet_free(&d->ipkt);
             need_req = 1;
         }
 
@@ -177,6 +179,8 @@ static int init_video_decoder(LVPDecoder *decoder){
         lvp_error(decoder->log,"param to context error",NULL);
         return LVP_E_FATAL_ERROR;
     }
+	decoder->avctx->thread_count = 2;
+	decoder->avctx->thread_type = FF_THREAD_FRAME;
     //todo set options
     ret = avcodec_open2(decoder->avctx,decoder->codec,NULL);
     if(ret < 0){

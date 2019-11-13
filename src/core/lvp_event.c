@@ -13,7 +13,7 @@ void lvp_event_free(LVPEvent *ev){
     if(ev->event_name){
         lvp_mem_free(ev->event_name);
     }
-    free(ev);
+    lvp_mem_free(ev);
 }
 
 ///
@@ -103,7 +103,7 @@ int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
     LVPEventHandler *h = lvp_map_get(ctl->handlers,ev->event_name);
     //no handler find
     if(!h){
-        if(ev->must_handle == 1){
+        if(ev->must_handle == LVP_TRUE){
             lvp_waring(NULL,"no handler for %s",ev->event_name);
         }
         return LVP_E_NO_MEDIA;
@@ -114,7 +114,7 @@ int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
     {
         LVPEventListener *l = (LVPEventListener*)listener_entry->data;
         int status = l->call(ev,l->usr_data);
-        if(status != LVP_OK){
+        if(status != LVP_OK && strcmp(ev->event_name,LVP_EVENT_READER_SEND_FRAME) ){
             lvp_waring(NULL,"event %s listener return status %d",ev->event_name,status);
         }
         ret |= status;
