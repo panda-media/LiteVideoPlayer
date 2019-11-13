@@ -19,7 +19,7 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     if(size >= cache->max_size){
         return LVP_E_NO_MEM;
     }
-	printf("cache type:%d size:%lld\n", cache->media_type, size);
+	//printf("cache type:%d size:%ld\n", cache->media_type, size);
 
     AVPacket *refpkt =  av_packet_clone(ev->data);
     if(refpkt == NULL){
@@ -49,6 +49,9 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     AVPacket *p = NULL;
     LVP_BOOL ret = lvp_queue_front(cache->data,(void **)&p,NULL);
     if(ret == LVP_FALSE || p == NULL){
+        return LVP_E_FATAL_ERROR;
+    }
+    if(p->pts<0){
         return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);

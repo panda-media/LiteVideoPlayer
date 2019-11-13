@@ -93,6 +93,7 @@ static void* reader_thread(void *data){
         if(ret<0){
             if(ret == AVERROR_EOF){
                 LVPSENDEVENT(m->ctl,LVP_EVENT_READER_EOF,NULL);
+                printf("EOF\n");
             }else{
                 LVPSENDEVENT(m->ctl,LVP_EVENT_READER_ERROR,NULL);
             }

@@ -17,6 +17,9 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
     //for other core module use
     LVPEvent *must_handle_ev = lvp_event_alloc(ev->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
+    if(ret!=LVP_OK){
+        //todo
+    }
 	lvp_event_free(must_handle_ev);
 	//todo
     return LVP_OK;
