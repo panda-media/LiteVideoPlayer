@@ -92,8 +92,13 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
 
 static int handle_req_frame(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
-    int64_t size = lvp_queue_size(cache->data,&size);
-    if(size==0){
+    int type = *(int*)ev->data;
+    if(type != cache->media_type){
+        return LVP_OK;
+    }
+    int64_t size =0;
+    LVP_BOOL ret = lvp_queue_size(cache->data,&size);
+    if(size==0 || ret == LVP_FALSE){
         return LVP_E_NO_MEM;
     }
     AVFrame *f = NULL;

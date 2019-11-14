@@ -53,7 +53,7 @@ LVPModule* lvp_module_iterate(void **opaque){
     size_t size = sizeof(LVPModules)/sizeof(LVPModules[0])-1;
     uintptr_t i = (uintptr_t)*opaque;
     LVPModule *m = NULL;
-    if(i<size){
+    if(i<=size){
         m = LVPModules[i];
     }
     if(m){

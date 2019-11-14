@@ -11,6 +11,7 @@ lvp_event_free(e)
 typedef struct lvp_event{
     char *event_name;
     void *data;
+	void* response;
     int must_handle;/// < must have handler
 }LVPEvent;
 
