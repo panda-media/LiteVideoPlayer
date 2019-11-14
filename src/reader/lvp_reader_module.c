@@ -105,9 +105,15 @@ static void* reader_thread(void *data){
 
 		int e_ret = lvp_event_control_send_event(m->ctl, ev);
 
-        need_read = e_ret == LVP_OK?LVP_TRUE:LVP_FALSE;
-		if(e_ret == LVP_OK)
+        //need_read = e_ret == LVP_OK?LVP_TRUE:LVP_FALSE;
+		if (e_ret == LVP_OK) {
 			av_packet_unref(&ipkt);
+			need_read = LVP_TRUE;
+		}
+		else {
+			need_read = LVP_FALSE;
+			lvp_sleep(30);
+		}
 
     }
 
