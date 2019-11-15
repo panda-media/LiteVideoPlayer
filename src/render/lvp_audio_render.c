@@ -3,7 +3,6 @@
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 
-FILE* pcm = NULL;
 static void audio_call(void *usrdata,uint8_t *stream, int len){
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
     uint8_t *mixdata = (uint8_t*)malloc(len);
@@ -16,14 +15,10 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
         can_write = can_write > len ? len: can_write;
         memcpy(mixdata,r->buf+r->rpos,can_write);
 
-		fwrite(r->buf+r->rpos, 1, can_write, pcm);
-		fflush(pcm);
         if(can_write<len){
             r->rpos = 0;
             int less = len -can_write;
             memcpy(mixdata+can_write,r->buf+r->rpos,less);
-			fwrite(r->buf+r->rpos, 1, less, pcm);
-			fflush(pcm);
             r->rpos += less;
         }else
         {
@@ -32,6 +27,7 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
 		r->buf_len -= len;
 		r->mix_len += len;
 		r->play_time = r->mix_len * 1000 / r->audio_spec->freq / r->one_sample_size;
+		r->play_time += r->start_time;
         //memset(mixdata,0,len);
     }
     else{
@@ -39,13 +35,14 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
     }
 	lvp_mutex_unlock(&r->buf_mutex);
 
-    //SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
-	SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
+    SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
+	//SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
     free(mixdata);
 }
 
 static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
     SDL_AudioSpec wanted;
+	r->start_time = f->pts;
     wanted.channels = f->channels;
     switch (f->format)
     {
@@ -73,15 +70,16 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
-	//r->audio_deviece = SDL_OpenAudioDevice(NULL, 0, &wanted, r->audio_spec, 0);
-	r->audio_deviece = SDL_OpenAudio(&wanted, r->audio_spec);
+	SDL_Init(SDL_INIT_AUDIO);
+	r->audio_deviece = SDL_OpenAudioDevice(NULL, 0, &wanted, r->audio_spec, 0);
+	//SDL_OpenAudio(&wanted, r->audio_spec);
 	r->one_sample_size = av_get_bytes_per_sample(f->format) * f->channels;
-   /* if(r->audio_deviece == NULL){
+    if(r->audio_deviece <2 ){
         lvp_error(r->log,"open audio device error",NULL);
         return LVP_E_FATAL_ERROR;
     }
-	SDL_PauseAudioDevice(r->audio_deviece, 0);*/
-	SDL_PauseAudio(0);
+	SDL_PauseAudioDevice(r->audio_deviece, 0);
+	//SDL_PauseAudio(0);
     return LVP_OK;
 }
 
@@ -95,7 +93,6 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
         r->buf =(uint8_t*)lvp_mem_mallocz(r->buf_max);
         int ret = init_sdl_audio(r,frame);
         SDL_Init(SDL_INIT_AUDIO);
-		pcm = fopen("/home/fgodt/test.pcm", "wb");
         if(ret!=LVP_OK){
             lvp_error(r->log,"init audio error",NULL);
             return LVP_E_FATAL_ERROR;
@@ -136,7 +133,6 @@ static int module_init(struct lvp_module *module,
     assert(module);
     assert(ctl);
     assert(log);
-	SDL_Init(SDL_INIT_AUDIO);
 
     LVPAudioRender *r = (LVPAudioRender*)module->private_data;
     r->ctl = ctl;

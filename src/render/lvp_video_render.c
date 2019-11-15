@@ -47,13 +47,13 @@ static int module_init(struct lvp_module *module,
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
+    r->rect.w = 1920;
+    r->rect.h = 1080;
     r->window = SDL_CreateWindow("Lite Video Player",SDL_WINDOWPOS_CENTERED,
-    SDL_WINDOWPOS_CENTERED,1024,576,SDL_WINDOW_SHOWN);
+    SDL_WINDOWPOS_CENTERED,r->rect.w,r->rect.h,SDL_WINDOW_SHOWN);
 
     r->renderer = SDL_CreateRenderer(r->window,-1,0);
 
-    r->rect.w = 1024;
-    r->rect.h = 576;
 
 	lvp_mutex_create(&r->mutex);
 

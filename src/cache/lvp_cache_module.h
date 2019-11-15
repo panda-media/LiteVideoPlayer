@@ -8,7 +8,7 @@
 #define CACHE_TYPE_FRAME    1
 
 #define PKT_SIZE 300
-#define FRAME_SIZE 30
+#define FRAME_SIZE 10
 typedef struct lvp_cache_module
 {
     LVPLog *log;

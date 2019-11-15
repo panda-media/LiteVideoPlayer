@@ -7,6 +7,8 @@ typedef struct lvp_audio_render {
     LVPEventControl *ctl;
     LVPLog *log;
     uint64_t play_time;
+	uint64_t start_time;
+
     SDL_AudioSpec *audio_spec;
     SDL_AudioDeviceID audio_deviece;
 	int one_sample_size;
