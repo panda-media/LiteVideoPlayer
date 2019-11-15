@@ -33,7 +33,7 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 	}
 
     if(r->target.format == AV_SAMPLE_FMT_NONE){
-		return;
+		return LVP_OK;
 	}
 
 	if(frame->format != r->src.format ||
@@ -75,7 +75,7 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
-	ret = swr_convert(r->swr,dstframe->data,dstframe->nb_samples,frame->data,frame->nb_samples);
+	ret = swr_convert(r->swr,dstframe->data,dstframe->nb_samples,(const uint8_t **)frame->data,frame->nb_samples);
 	if(ret<=0){
 		lvp_error(r->log,"swr convert error",NULL);
 		av_frame_free(&dstframe);

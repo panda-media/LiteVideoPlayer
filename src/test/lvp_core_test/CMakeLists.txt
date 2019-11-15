@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 
 project(test)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
 
 
-include_directories("../../../deps/ffmpeg/windows/include/")
-link_directories("../../../deps/ffmpeg/windows/lib/")
+include_directories("../../../deps/ffmpeg/linux/include/")
+link_directories("../../../deps/ffmpeg/linux/lib/")
 
 include_directories("../../../deps/SDL2/windows/")
 link_directories("../../../deps/SDL2/windows/lib/x64/")
@@ -44,5 +44,8 @@ target_link_libraries(
     swscale
     avutil
 	SDL2
-	SDL2main
+    SDL2main
+    pthread
+    m
+    z
 )

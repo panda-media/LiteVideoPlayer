@@ -6,9 +6,11 @@
 FILE* pcm = NULL;
 static void audio_call(void *usrdata,uint8_t *stream, int len){
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
-    uint8_t *mixdata = lvp_mem_mallocz(len);
+    uint8_t *mixdata = (uint8_t*)malloc(len);
+    memset(mixdata,0,len);
+    memset(stream,0,len);
 	lvp_mutex_lock(&r->buf_mutex);
-    if(r->buf_len>=len){
+    if(r->buf_len >= len){
 
         int can_write = r->buf_max - r->rpos;
         can_write = can_write > len ? len: can_write;
@@ -30,12 +32,16 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
 		r->buf_len -= len;
 		r->mix_len += len;
 		r->play_time = r->mix_len * 1000 / r->audio_spec->freq / r->one_sample_size;
+        //memset(mixdata,0,len);
+    }
+    else{
+        printf("LAG\n");
     }
 	lvp_mutex_unlock(&r->buf_mutex);
 
     //SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
 	SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
-    lvp_mem_free(mixdata);
+    free(mixdata);
 }
 
 static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
@@ -63,11 +69,10 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = 1024;
+    wanted.samples = 512;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
-	r->audio_deviece = NULL;
 	//r->audio_deviece = SDL_OpenAudioDevice(NULL, 0, &wanted, r->audio_spec, 0);
 	r->audio_deviece = SDL_OpenAudio(&wanted, r->audio_spec);
 	r->one_sample_size = av_get_bytes_per_sample(f->format) * f->channels;
@@ -86,11 +91,11 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
 
     size_t one_frame_size = av_samples_get_buffer_size(frame->linesize,frame->channels,frame->nb_samples,frame->format,0);
     if(r->buf == NULL){
-	SDL_Init(SDL_INIT_AUDIO);
         r->buf_max = one_frame_size * 3;
         r->buf =(uint8_t*)lvp_mem_mallocz(r->buf_max);
         int ret = init_sdl_audio(r,frame);
-		pcm = fopen("d:/test.pcm", "wb");
+        SDL_Init(SDL_INIT_AUDIO);
+		pcm = fopen("/home/fgodt/test.pcm", "wb");
         if(ret!=LVP_OK){
             lvp_error(r->log,"init audio error",NULL);
             return LVP_E_FATAL_ERROR;
@@ -131,6 +136,7 @@ static int module_init(struct lvp_module *module,
     assert(module);
     assert(ctl);
     assert(log);
+	SDL_Init(SDL_INIT_AUDIO);
 
     LVPAudioRender *r = (LVPAudioRender*)module->private_data;
     r->ctl = ctl;
