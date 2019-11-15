@@ -8,6 +8,7 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
     uint8_t *mixdata = (uint8_t*)malloc(len);
     memset(mixdata,0,len);
+    memset(stream,0,len);
 	lvp_mutex_lock(&r->buf_mutex);
     if(r->buf_len >= len){
 
@@ -68,7 +69,7 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = 1024;
+    wanted.samples = 512;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
