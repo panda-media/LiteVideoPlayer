@@ -144,6 +144,12 @@ static int init_core_modules(LVPCore *core){
 
     ret = init_basic_module(core,"LVP_VIDEO_DECODER","video_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 
+    ret = init_basic_module(core,"LVP_AUDIO_RENDER","audio_render",LVP_MODULE_CORE|LVP_MODULE_RENDER);
+
+    ret = init_basic_module(core,"LVP_VIDEO_RENDER","video_render",LVP_MODULE_CORE|LVP_MODULE_RENDER);
+
+    ret = init_basic_module(core,"LVP_AVSYNC_MODULE","video_render",LVP_MODULE_CORE);
+
     return LVP_OK;
 
     error:

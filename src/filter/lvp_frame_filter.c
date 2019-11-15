@@ -1,4 +1,5 @@
 #include "lvp_frame_filter.h"
+#include <libavcodec/avcodec.h>
 
 
 static void filter_sub_module_free(void *data,void *usr_data){
@@ -11,17 +12,22 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
     assert(ev);
     LVPFrameFilter *f = (LVPFrameFilter*)usr_data;
 
-    //for sub module use
-    LVPSENDEVENT(f->ctl,LVP_EVENT_FILTER_GOT_FRAME,ev->data);
+	LVPEvent* sub_event = lvp_event_alloc(ev->data, LVP_EVENT_FILTER_GOT_FRAME, LVP_FALSE);
+    lvp_event_control_send_event(f->ctl,sub_event);
 
     //for other core module use
-    LVPEvent *must_handle_ev = lvp_event_alloc(ev->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
+    LVPEvent *must_handle_ev = lvp_event_alloc(sub_event->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
-    if(ret!=LVP_OK){
-        //todo
-    }
+	//filter change data
+	if (sub_event->data != ev->data) {
+		AVFrame* f = (AVFrame*)sub_event->data;
+		av_frame_free(&f);
+	}
 	lvp_event_free(must_handle_ev);
-	//todo
+	lvp_event_free(sub_event);
+    if(ret!=LVP_OK){
+        return ret;
+    }
     return LVP_OK;
 }
 
