@@ -1,5 +1,6 @@
 #include "lvp_decoder.h"
 #include <libavformat/avformat.h>
+#include "lvp_hwaccel_decoder.h"
 
 static void close_decoder(LVPDecoder *decoder){
     if(decoder->decoder_thread_run == 1){
@@ -70,6 +71,8 @@ static int find_best_video_decoder(LVPDecoder *decoder){
             decoder->codec = avcodec_find_decoder_by_name(force_codec_name);
     }
 
+	
+
 //todo use hwaccel
 #if USE_HW
     //use default codec qsv -> nvdia -> dxva2/vaapi -> h264
@@ -96,7 +99,10 @@ static int find_best_video_decoder(LVPDecoder *decoder){
     }
 #endif //use hwaccel
 
-    decoder->codec = avcodec_find_decoder(decoder->stream->codecpar->codec_id);
+	if (!decoder->codec) {
+		decoder->codec = avcodec_find_decoder(decoder->stream->codecpar->codec_id);
+	}
+
 
     return LVP_OK;
 
@@ -110,6 +116,7 @@ static void* decoder_thread(void *data){
     LVPEvent *sev = lvp_event_alloc(NULL,LVP_EVENT_DECODER_SEND_FRAME,LVP_TRUE);
     int need_req = 1;
     d->iframe = av_frame_alloc();
+	d->sw_frame = av_frame_alloc();
     while (d->decoder_thread_run == 1)
     {
         int ret = 0;
@@ -145,8 +152,27 @@ static void* decoder_thread(void *data){
             break;
         }
         if(ret == 0){
-            LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->iframe);
             sev->data = d->iframe;
+			//video
+			if (d->iframe->width > 0) {
+				if (d->hw_pix_fmt == d->iframe->format) {
+					int ret = av_hwframe_transfer_data(d->sw_frame, d->iframe, 0);
+					if (ret < 0) {
+						lvp_error(d->log, "hwframe transer error", NULL);
+						break;
+					}
+					av_frame_copy_props(d->sw_frame, d->iframe);
+					sev->data = d->sw_frame;
+					LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->sw_frame);
+				}
+				else {
+					LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->iframe);
+				}
+			}
+			else
+			{
+				LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->iframe);
+			}
             retry:
             ret = lvp_event_control_send_event(d->ctl,sev);
             if(ret != LVP_OK && ret != LVP_E_NO_MEM){
@@ -158,6 +184,8 @@ static void* decoder_thread(void *data){
             }
         }
     }
+
+	d->decoder_thread_run = 0;
     
     lvp_event_free(ev);
     lvp_event_free(sev);
@@ -181,6 +209,7 @@ static int init_video_decoder(LVPDecoder *decoder){
     }
 	decoder->avctx->thread_count = 2;
 	decoder->avctx->thread_type = FF_THREAD_FRAME;
+	lvp_set_up_hwaccel_decoder(decoder);
     //todo set options
     ret = avcodec_open2(decoder->avctx,decoder->codec,NULL);
     if(ret < 0){
@@ -245,6 +274,7 @@ static int module_init(struct lvp_module *module,
     decoder->log->log_call = log->log_call;
     decoder->log->usr_data = log->usr_data;
     decoder->options = options;
+	decoder->hw_pix_fmt = AV_PIX_FMT_NONE;
 
     int ret = lvp_event_control_add_listener(ctl,LVP_EVENT_SELECT_STREAM,handle_select_stream,decoder);
     if(ret != LVP_OK){

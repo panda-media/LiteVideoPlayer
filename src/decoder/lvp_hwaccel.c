@@ -1,16 +1,17 @@
 #include "lvp_hwaccel.h"
 #include "../core/lvp_map.h"
+#include <libavutil/hwcontext.h>
+#include <libavutil/avutil.h>
+#include <libavcodec/avcodec.h>
+#include <libavcodec/utils.h>
 
 LVPHWAccel *lvp_hwaccel_get_hwaccel(LVPMap *options){
     LVPHWAccel *hw = (LVPHWAccel*)lvp_mem_mallocz(sizeof(*hw));
     const char *hwaccel = lvp_map_get(options,"hwaccel");
-    if(!strcmp(hwaccel,"none")){
-        hw->id = LVP_HWACCEL_NONE;
-    }
-    else if(!strcmp(hwaccel,"auto")){
+	hw->id = LVP_HWACCEL_NONE;
+    if(!strcmp(hwaccel,"auto")){
         hw->id = LVP_HWACCEL_AUTO;
-    }else
-    {
+    }else{
         enum AVHWDeviceType type;
         int i;
         for (size_t i = 0; i < hwaccels[i].name; i++)
@@ -26,6 +27,7 @@ LVPHWAccel *lvp_hwaccel_get_hwaccel(LVPMap *options){
             if(!type != AV_HWDEVICE_TYPE_NONE){
                 hw->id = LVP_HWACCEL_GENERIC;
                 hw->type = type;
+                lvp_str_dump(hwaccel,&hw->name);
             }
         }
 
@@ -41,4 +43,51 @@ LVPHWAccel *lvp_hwaccel_get_hwaccel(LVPMap *options){
 
     return hw;
     
+}
+
+int lvp_hwaccel_set_up(AVCodecContext* avctx, LVPHWAccel* hwaccel) {
+	assert(avctx);
+	assert(hwaccel);
+
+    int err;
+    int auto_device = 0;
+    enum AVHWDeviceType type;
+    AVBufferRef *device_ref = NULL;
+
+	switch (hwaccel->id)
+	{
+	case LVP_HWACCEL_AUTO:
+        auto_device = 1;
+		break;
+    case LVP_HWACCEL_GENERIC:
+        type = hwaccel->type;
+        err = av_hwdevice_ctx_create(&device_ref,type,hwaccel->name,NULL,0);
+        break;
+    case LVP_HWACCEL_VIDEOTOOLBOX:
+        return LVP_OK;
+        break;
+	case LVP_HWACCEL_QSV:
+        return LVP_OK;
+		break;
+    case LVP_HWACCEL_CUVID:
+        return LVP_OK;
+        break;
+	default:
+        return LVP_OK;
+		break;
+	}
+
+    if(auto_device){
+        int i;
+        if(!avcodec_get_hw_config(avctx,0)){
+            return LVP_OK;
+        }
+        while (1)
+        {
+            AVCodecHWConfig *config = avcodec_get_hw_config()
+            
+        }
+        
+    }
+
 }

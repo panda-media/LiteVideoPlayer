@@ -37,6 +37,7 @@ typedef struct lvp_hwaccel{
     int (*init)(AVCodecContext *s);
     LVPHWAccelID id;
     enum AVPixelFormat pix_fmt;
+    enum AVHWDeviceType type;
 }LVPHWAccel;
 
 typedef struct lvp_hwdevice{

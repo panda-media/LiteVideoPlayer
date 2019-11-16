@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(test)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
+
 
 
 include_directories("../../../deps/ffmpeg/linux/include/")
@@ -23,16 +24,19 @@ add_executable(
     ../../core/lvp_mutex.c
     ../../core/lvp_str.c
     ../../core/lvp_queue.c
+	  ../../core/lvp_avsync.c
 
     ../../reader/lvp_reader_module.c
     ../../filter/lvp_pkt_filter.c
     ../../filter/lvp_frame_filter.c
-	../../filter/lvp_audio_resample.c
+	  ../../filter/lvp_audio_resample.c
     ../../cache/lvp_cache_module.c
     ../../decoder/lvp_decoder.c
+    ../../decoder/lvp_hwaccel_decoder.c
     ../../render/lvp_video_render.c
-	../../render/lvp_audio_render.c
-	../../core/lvp_avsync.c
+	  ../../render/lvp_audio_render.c
+	  ../../core/lvp_avsync.c
+
     core_test.c
 )
 
@@ -43,7 +47,7 @@ target_link_libraries(
     swresample
     swscale
     avutil
-	SDL2
+	  SDL2
     SDL2main
     pthread
     m
