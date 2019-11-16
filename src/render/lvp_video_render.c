@@ -12,14 +12,26 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	lvp_mutex_lock(&r->mutex);
     if (r->texture == NULL)
     {
-        r->texture = SDL_CreateTexture(r->renderer,SDL_PIXELFORMAT_IYUV,
-        SDL_TEXTUREACCESS_STREAMING,f->width,f->height);
+			r->texture = SDL_CreateTexture(r->renderer, SDL_PIXELFORMAT_IYUV,
+				SDL_TEXTUREACCESS_STREAMING, f->width, f->height);
     }
 
-    SDL_UpdateYUVTexture(r->texture,NULL,
-	f->data[0],f->linesize[0],
-    f->data[1],f->linesize[1],
-    f->data[2],f->linesize[2]);
+	
+
+	if (f->format == AV_PIX_FMT_YUV420P) {
+
+		SDL_UpdateYUVTexture(r->texture, NULL,
+			f->data[0], f->linesize[0],
+			f->data[1], f->linesize[1],
+			f->data[2], f->linesize[2]);
+	}
+	else
+	{
+		SDL_UpdateYUVTexture(r->texture, NULL,
+			f->data[0], f->linesize[0],
+			f->data[1], f->linesize[1]/2,
+			f->data[1], f->linesize[1]/2);
+	}
     
     SDL_RenderClear(r->renderer);
     SDL_RenderCopy(r->renderer,r->texture,NULL,&r->rect);

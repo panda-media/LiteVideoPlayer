@@ -13,6 +13,7 @@ typedef struct lvp_decoder{
     AVCodec *codec;
     AVCodecContext *avctx;
     AVFrame *iframe;
+	AVFrame* sw_frame;
     AVPacket *ipkt;
     lvp_thread dec_thread;
 
@@ -21,6 +22,10 @@ typedef struct lvp_decoder{
     enum AVMediaType codec_type;
     AVStream *stream;
 
+	//hwaccel
+	AVBufferRef* hw_device_ctx;
+	enum AVPixelFormat hw_pix_fmt;
+	enum AVHWDeviceType hw_dev_type;
 }LVPDecoder;
 
 #endif
