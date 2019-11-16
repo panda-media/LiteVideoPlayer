@@ -12,6 +12,7 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	lvp_mutex_lock(&r->mutex);
     if (r->texture == NULL)
     {
+
 			r->texture = SDL_CreateTexture(r->renderer, SDL_PIXELFORMAT_IYUV,
 				SDL_TEXTUREACCESS_STREAMING, f->width, f->height);
     }
@@ -27,6 +28,7 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	}
 	else
 	{
+    //for test
 		SDL_UpdateYUVTexture(r->texture, NULL,
 			f->data[0], f->linesize[0],
 			f->data[1], f->linesize[1]/2,
