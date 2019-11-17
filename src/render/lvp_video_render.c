@@ -2,6 +2,11 @@
 #include <libavcodec/avcodec.h>
 
 int handle_update(LVPEvent *ev,void *usrdata){
+
+    //todo test
+    return LVP_OK;
+    //test code 
+
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
 
     AVFrame *f = (AVFrame*)ev->data;
@@ -28,7 +33,9 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	}
 	else
 	{
+
     //for test
+
 		SDL_UpdateYUVTexture(r->texture, NULL,
 			f->data[0], f->linesize[0],
 			f->data[1], f->linesize[1]/2,
@@ -53,6 +60,12 @@ static int module_init(struct lvp_module *module,
     assert(ctl);
     assert(log);
 
+    //todo test
+    lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
+    return LVP_OK;
+    //test code 
+
+
     LVPVideoRender *r = (LVPVideoRender*)module->private_data;
     r->ctl = ctl;
     r->log = lvp_log_alloc(module->name);
@@ -61,8 +74,10 @@ static int module_init(struct lvp_module *module,
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
-    r->rect.w = 1920;
-    r->rect.h = 1080;
+
+    r->rect.w = 1280;
+    r->rect.h = 720;
+
     r->window = SDL_CreateWindow("Lite Video Player",SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,r->rect.w,r->rect.h,SDL_WINDOW_SHOWN);
 
@@ -85,6 +100,23 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
+
+	LVPVideoRender* r = (LVPVideoRender*)module->private_data;
+	if (r->log) {
+		lvp_log_free(r->log);
+	}
+	if (r->texture) {
+		SDL_DestroyTexture(r->texture);
+	}
+	if (r->renderer) {
+		SDL_DestroyRenderer(r->renderer);
+	}
+	if (r->window) {
+		SDL_DestroyWindow(r->window);
+	}
+	lvp_mem_free(r);
+	module->private_data = NULL;
+
 }
 
 LVPModule lvp_video_render = {

@@ -6,6 +6,7 @@ project(test)
 
 
 
+
 include_directories("../../../deps/ffmpeg/linux/include/")
 link_directories("../../../deps/ffmpeg/linux/lib/")
 
@@ -26,17 +27,21 @@ add_executable(
     ../../core/lvp_queue.c
 	  ../../core/lvp_avsync.c
 
+
     ../../reader/lvp_reader_module.c
+    
     ../../filter/lvp_pkt_filter.c
     ../../filter/lvp_frame_filter.c
 	  ../../filter/lvp_audio_resample.c
+
     ../../cache/lvp_cache_module.c
+    
     ../../decoder/lvp_decoder.c
     ../../decoder/lvp_hwaccel_decoder.c
+    
     ../../render/lvp_video_render.c
 	  ../../render/lvp_audio_render.c
-	  ../../core/lvp_avsync.c
-
+    
     core_test.c
 )
 
@@ -52,4 +57,5 @@ target_link_libraries(
     pthread
     m
     z
+    
 )

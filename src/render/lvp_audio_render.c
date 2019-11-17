@@ -84,6 +84,13 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 }
 
 static int handle_audio(LVPEvent *ev, void *usrdata){
+
+    //todo test
+    lvp_sleep(1);
+    return LVP_OK;
+    //test code 
+    
+
     AVFrame *frame = (AVFrame*)ev->data;
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
 
@@ -134,6 +141,7 @@ static int module_init(struct lvp_module *module,
     assert(ctl);
     assert(log);
 
+
     LVPAudioRender *r = (LVPAudioRender*)module->private_data;
     r->ctl = ctl;
     r->log = lvp_log_alloc(module->name);
@@ -155,6 +163,24 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
+
+	LVPAudioRender* r = (LVPAudioRender*)module->private_data;
+	if (r->audio_deviece >= 2) {
+		SDL_PauseAudioDevice(r->audio_deviece, 1);
+		SDL_CloseAudioDevice(r->audio_deviece);
+	}
+	if (r->audio_spec) {
+		lvp_mem_free(r->audio_spec);
+	}
+	if (r->buf) {
+		lvp_mem_free(r->buf);
+	}
+	if (r->log) {
+		lvp_log_free(r->log);
+	}
+	lvp_mem_free(r);
+	module->private_data = NULL;
+
 }
 
 LVPModule lvp_audio_render = {

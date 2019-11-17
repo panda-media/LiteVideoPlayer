@@ -306,7 +306,36 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
-    //LVPDecoder *decoder = (LVPDecoder*)module->private_data;
+    LVPDecoder *decoder = (LVPDecoder*)module->private_data;
+	if (decoder->decoder_thread_run == 1) {
+		decoder->decoder_thread_run = 0;
+		lvp_thread_join(decoder->dec_thread);
+	}
+
+	if (decoder->avctx != NULL) {
+		avcodec_close(decoder->avctx);
+		avcodec_free_context(&decoder->avctx);
+	}
+
+	if (decoder->hw_device_ctx) {
+		av_buffer_unref(&decoder->hw_device_ctx);
+	}
+
+	if (decoder->iframe) {
+		av_frame_free(&decoder->iframe);
+	}
+
+	if (decoder->sw_frame) {
+		av_frame_free(&decoder->sw_frame);
+	}
+
+	if (decoder->ipkt) {
+		av_packet_free(&decoder->ipkt);
+	}
+	if (decoder->log) {
+		lvp_log_free(decoder->log);
+	}
+	lvp_mem_free(decoder);
     return ;
 }
 

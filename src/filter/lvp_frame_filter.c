@@ -12,17 +12,20 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
     assert(ev);
     LVPFrameFilter *f = (LVPFrameFilter*)usr_data;
 
-	LVPEvent* sub_event = lvp_event_alloc(ev->data, LVP_EVENT_FILTER_GOT_FRAME, LVP_FALSE);
+
+	AVFrame* src_frame = av_frame_clone(ev->data);
+	LVPEvent* sub_event = lvp_event_alloc(src_frame, LVP_EVENT_FILTER_GOT_FRAME, LVP_FALSE);
     lvp_event_control_send_event(f->ctl,sub_event);
 
     //for other core module use
     LVPEvent *must_handle_ev = lvp_event_alloc(sub_event->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
-	//filter change data
-	if (sub_event->data != ev->data) {
-		AVFrame* f = (AVFrame*)sub_event->data;
-		av_frame_free(&f);
-	}
+
+	//filter change data, and free src_frame;
+	src_frame = (AVFrame*)sub_event->data;
+	av_frame_free(&src_frame);
+
+
 	lvp_event_free(must_handle_ev);
 	lvp_event_free(sub_event);
     if(ret!=LVP_OK){
@@ -77,9 +80,14 @@ static int filter_init(struct lvp_module *module,
 static void filter_close(struct lvp_module *module){
     assert(module);
     LVPFrameFilter *f = (LVPFrameFilter*)module->private_data;
+    lvp_event_control_remove_listener(f->ctl,LVP_EVENT_DECODER_SEND_FRAME,handle_frame,f);
     if(f->modules){
         lvp_list_free(f->modules);
     }
+	if (f->log) {
+		lvp_log_free(f->log);
+	}
+	lvp_mem_free(f);
 }
 
 LVPModule lvp_frame_filter = {

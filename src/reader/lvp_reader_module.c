@@ -10,8 +10,8 @@ static int ff_interrupt_call(void *data){
 
 static void* reader_thread(void *data){
     LVPReaderModule *m = (LVPReaderModule*)data;
-    AVFormatContext *fmt = m->avctx = avformat_alloc_context();
-
+     m->avctx = avformat_alloc_context();
+    AVFormatContext *fmt = m->avctx;
     lvp_debug(m->log,"in reader thread",NULL);
 
     fmt->interrupt_callback.opaque = m;
@@ -19,7 +19,7 @@ static void* reader_thread(void *data){
 
     //todo set option
     lvp_mutex_lock(&m->avctx_mutex);
-    int ret = avformat_open_input(&fmt,m->input_url,NULL,NULL);
+    int ret = avformat_open_input(&m->avctx,m->input_url,NULL,NULL);
     lvp_mutex_unlock(&m->avctx_mutex);
     if(ret<0){
         LVPSENDEVENT(m->ctl,LVP_EVENT_OPEN_ERROR,NULL);
@@ -119,6 +119,7 @@ static void* reader_thread(void *data){
 
     av_packet_unref(&ipkt);
     lvp_event_free(ev);
+	lvp_event_free(sub_ev);
 
 	rerror:
     lvp_debug(m->log,"out reader thread",NULL);
@@ -256,11 +257,11 @@ static int module_init(struct lvp_module *module,
 }
 
 static void module_close(struct lvp_module *module){
-    LVPReaderModule *m = (LVPReaderModule*)module;
+    LVPReaderModule *m = (LVPReaderModule*)module->private_data;
     m->is_interrupt = LVP_TRUE;
-    m->is_reader_thread_run = LVP_FALSE;
 
     if(m->reader_thread!=0){
+		m->is_reader_thread_run = 0;
         lvp_thread_join(m->reader_thread);
         m->reader_thread = 0;
     }
@@ -273,6 +274,10 @@ static void module_close(struct lvp_module *module){
     if(m->input_url){
         lvp_mem_free(m->input_url);
     }
+    if(m->log){
+        lvp_log_free(m->log);
+    }
+	lvp_mem_free(m);
 }
 
 LVPModule lvp_reader_module = {
