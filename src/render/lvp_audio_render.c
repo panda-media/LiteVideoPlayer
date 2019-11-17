@@ -84,6 +84,12 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 }
 
 static int handle_audio(LVPEvent *ev, void *usrdata){
+
+    //todo test
+    lvp_sleep(1);
+    return LVP_OK;
+    //test code 
+    
     AVFrame *frame = (AVFrame*)ev->data;
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
 
@@ -133,6 +139,7 @@ static int module_init(struct lvp_module *module,
     assert(module);
     assert(ctl);
     assert(log);
+
 
     LVPAudioRender *r = (LVPAudioRender*)module->private_data;
     r->ctl = ctl;

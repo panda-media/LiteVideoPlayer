@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(test)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Werror   -Wall ")
 
 
 include_directories("../../../deps/ffmpeg/linux/include/")
@@ -46,4 +46,8 @@ target_link_libraries(
     avutil
 	SDL2
     SDL2main
+    pthread
+    m
+    z
+    
 )

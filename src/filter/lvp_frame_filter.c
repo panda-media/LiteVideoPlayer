@@ -78,6 +78,7 @@ static int filter_init(struct lvp_module *module,
 static void filter_close(struct lvp_module *module){
     assert(module);
     LVPFrameFilter *f = (LVPFrameFilter*)module->private_data;
+    lvp_event_control_remove_listener(f->ctl,LVP_EVENT_DECODER_SEND_FRAME,handle_frame,f);
     if(f->modules){
         lvp_list_free(f->modules);
     }

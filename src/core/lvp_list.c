@@ -32,8 +32,9 @@ void lvp_list_free(LVPList *list){
     LVPListEntry *entry = list->entrys;
     while ( entry != NULL)
     {
-        lvp_list_entry_free(&entry);
+        LVPListEntry *tmp = entry;
         entry = entry->next;
+        lvp_list_entry_free(&tmp);
     }
     lvp_mem_free(list);
 }

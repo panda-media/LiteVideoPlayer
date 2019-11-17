@@ -2,6 +2,9 @@
 #include <libavcodec/avcodec.h>
 
 int handle_update(LVPEvent *ev,void *usrdata){
+    //todo test
+    return LVP_OK;
+    //test code 
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
 
     AVFrame *f = (AVFrame*)ev->data;
@@ -50,6 +53,10 @@ static int module_init(struct lvp_module *module,
     assert(module);
     assert(ctl);
     assert(log);
+    //todo test
+    lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
+    return LVP_OK;
+    //test code 
 
     LVPVideoRender *r = (LVPVideoRender*)module->private_data;
     r->ctl = ctl;
