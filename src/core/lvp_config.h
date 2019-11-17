@@ -2,7 +2,7 @@
 #define _LVP_CONFIG_H_
 
 #define LVP_LINUX
-//#undef LVP_LINUX
+#undef LVP_LINUX
 
 
 #ifdef LVP_LINUX

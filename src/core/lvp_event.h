@@ -66,6 +66,9 @@ void lvp_event_control_free(LVPEventControl *ctl);
 int lvp_event_control_add_listener(LVPEventControl *ctl,
         const char *key, lvp_event_call call, void *usr_data);
 
+void lvp_event_control_remove_listener(LVPEventControl* ctl, const char* key,
+		lvp_event_call call, void* usrdata);
+
 int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev);
 
 

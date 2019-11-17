@@ -155,6 +155,22 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
+	LVPAudioRender* r = (LVPAudioRender*)module->private_data;
+	if (r->audio_deviece >= 2) {
+		SDL_PauseAudioDevice(r->audio_deviece, 1);
+		SDL_CloseAudioDevice(r->audio_deviece);
+	}
+	if (r->audio_spec) {
+		lvp_mem_free(r->audio_spec);
+	}
+	if (r->buf) {
+		lvp_mem_free(r->buf);
+	}
+	if (r->log) {
+		lvp_log_free(r->log);
+	}
+	lvp_mem_free(r);
+	module->private_data = NULL;
 }
 
 LVPModule lvp_audio_render = {

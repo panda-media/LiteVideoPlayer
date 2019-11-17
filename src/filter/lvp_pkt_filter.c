@@ -1,16 +1,26 @@
 #include "lvp_pkt_filter.h"
+#include <libavcodec/avcodec.h>
 
 static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     assert(ev);
     LVPPktFilter *f = (LVPPktFilter*)usr_data;
+	
+	AVPacket* src_pkt = av_packet_clone(ev->data);
 
+	// src_pkt is ref data if sub module change ev->data MUST FREE src_pkt
     //for sub module use
-    LVPSENDEVENT(f->ctl,LVP_EVENT_FILTER_GOT_PKT,ev->data);
+	LVPEvent* sub_event = lvp_event_alloc(src_pkt, LVP_EVENT_FILTER_GOT_PKT, LVP_FALSE);
+	lvp_event_control_send_event(f->ctl, sub_event);
 
     //for other core module use
-    LVPEvent *must_handle_ev = lvp_event_alloc(ev->data,LVP_EVENT_FILTER_SEND_PKT,LVP_TRUE);
+    LVPEvent *must_handle_ev = lvp_event_alloc(sub_event->data,LVP_EVENT_FILTER_SEND_PKT,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
+
+	src_pkt = sub_event->data;
+	av_packet_free(&src_pkt);
+
 	lvp_event_free(must_handle_ev);
+	lvp_event_free(sub_event);
     
     return ret;
 }
@@ -70,6 +80,11 @@ static void filter_close(struct lvp_module *module){
     if(f->modules){
         lvp_list_free(f->modules);
     }
+	if (f->log) {
+		lvp_log_free(f->log);
+	}
+	lvp_mem_free(f);
+	module->private_data = NULL;
 }
 
 

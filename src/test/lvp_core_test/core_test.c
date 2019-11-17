@@ -5,12 +5,13 @@
 int main(int argc, char **argv){
 
     LVPCore *core = lvp_core_alloc();
-    lvp_core_set_option(core,"-readers abcreader");
-	lvp_core_set_url(core, "/home/fgodt/test.flv");
+    lvp_core_set_option(core,"-readers abcreader -lvphw qsv");
+	lvp_core_set_url(core, "d:/test.flv");
     lvp_core_play(core);
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	while (1)
+	int count = 0;
+	while (count<500)
 	{
 		SDL_Event event;
 		SDL_PollEvent(&event);
@@ -18,6 +19,9 @@ int main(int argc, char **argv){
 			break;
 		}
 		lvp_sleep(10);
+		count++;
 	}
+	lvp_core_free(core);
+	getchar();
     return 0;
 }

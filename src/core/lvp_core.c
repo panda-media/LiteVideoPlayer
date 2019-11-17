@@ -12,7 +12,7 @@ LVPCore* lvp_core_alloc(){
 void lvp_core_free(LVPCore *core){
     assert(core);
     if(core->modules){
-        lvp_mem_free(core->modules);
+        lvp_list_free(core->modules);
     }
     if(core->options){
         lvp_map_free(core->options);
@@ -29,6 +29,7 @@ void lvp_core_free(LVPCore *core){
     if(core->option_str){
         lvp_mem_free(core->option_str);
     }
+	lvp_mem_free(core);
 }
 
 int lvp_core_set_url(LVPCore *core, const char *input){
@@ -56,39 +57,11 @@ int lvp_core_set_custom_log(LVPCore *core,lvp_custom_log log,void *usr_data){
     return LVP_OK;
 }
 
-//static LVPModule*  get_module(const char *module_name,LVPModuleType type){
-//    assert(module_name);
-//    assert(type);
-//    int size  = sizeof(LVPModules)/sizeof(LVPModules[0]);
-//    for (size_t i = 0; i < size; i++)
-//    {
-//        //find module
-//        if(type == LVPModules[i]->type && !strcmp(module_name,LVPModules[i]->name)){
-//            LVPModule *m = lvp_mem_mallocz(sizeof(LVPModule));
-//            memcpy(m,LVPModules[i],sizeof(LVPModule));
-//            return m;
-//        }
-//    }
-//    return NULL;
-//}
-
-//static int init_module(LVPModule *m, LVPCore *core){
-//    assert(m);
-//    assert(core);
-//    if(!m->module_init){
-//        lvp_error(NULL,"module %s no function for init ",m->name);
-//        return LVP_E_FATAL_ERROR;
-//    }
-//    m->private_data = lvp_mem_mallocz(m->private_data_size);
-//    int ret = m->module_init(m,core->options,core->event_control,core->log);
-//    if(ret != LVP_OK)
-//        lvp_waring(NULL,"module %s init return %d",m->name,ret);
-//    else
-//        lvp_debug(NULL,"module %s init return %d",m->name,ret);
-//
-//    return LVP_OK;
-//}
-
+static void lvp_module_custom_free(void* data, void* usr_data) {
+	LVPModule* m = (LVPModule*)data;
+	m->module_close(m);
+	lvp_mem_free(m);
+}
 
 static int init_basic_module(LVPCore *core,const char *default_module_name,
                              const char *option_key, LVPModuleType type){
@@ -109,7 +82,7 @@ static int init_basic_module(LVPCore *core,const char *default_module_name,
         return ret;
     }
     //所有module只负责释放结构体，module自己应该遵循习惯通过close自己释放private data 
-    lvp_list_add(core->modules,module,NULL,NULL,1);
+    lvp_list_add(core->modules,module,NULL,lvp_module_custom_free,1);
     return LVP_OK;
 }
 

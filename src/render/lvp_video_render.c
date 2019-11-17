@@ -59,8 +59,8 @@ static int module_init(struct lvp_module *module,
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
-    r->rect.w = 1920;
-    r->rect.h = 1080;
+    r->rect.w = 1280;
+    r->rect.h = 720;
     r->window = SDL_CreateWindow("Lite Video Player",SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,r->rect.w,r->rect.h,SDL_WINDOW_SHOWN);
 
@@ -83,6 +83,21 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
+	LVPVideoRender* r = (LVPVideoRender*)module->private_data;
+	if (r->log) {
+		lvp_log_free(r->log);
+	}
+	if (r->texture) {
+		SDL_DestroyTexture(r->texture);
+	}
+	if (r->renderer) {
+		SDL_DestroyRenderer(r->renderer);
+	}
+	if (r->window) {
+		SDL_DestroyWindow(r->window);
+	}
+	lvp_mem_free(r);
+	module->private_data = NULL;
 }
 
 LVPModule lvp_video_render = {

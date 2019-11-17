@@ -119,6 +119,7 @@ static void* reader_thread(void *data){
 
     av_packet_unref(&ipkt);
     lvp_event_free(ev);
+	lvp_event_free(sub_ev);
 
 	rerror:
     lvp_debug(m->log,"out reader thread",NULL);
@@ -256,11 +257,11 @@ static int module_init(struct lvp_module *module,
 }
 
 static void module_close(struct lvp_module *module){
-    LVPReaderModule *m = (LVPReaderModule*)module;
+    LVPReaderModule *m = (LVPReaderModule*)module->private_data;
     m->is_interrupt = LVP_TRUE;
-    m->is_reader_thread_run = LVP_FALSE;
 
     if(m->reader_thread!=0){
+		m->is_reader_thread_run = 0;
         lvp_thread_join(m->reader_thread);
         m->reader_thread = 0;
     }
@@ -273,6 +274,7 @@ static void module_close(struct lvp_module *module){
     if(m->input_url){
         lvp_mem_free(m->input_url);
     }
+	lvp_mem_free(m);
 }
 
 LVPModule lvp_reader_module = {

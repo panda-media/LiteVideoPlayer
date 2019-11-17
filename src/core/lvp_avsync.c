@@ -142,6 +142,33 @@ static int module_init(struct lvp_module *module,
 
 
 static void module_close(struct lvp_module *module){
+	LVPAVSync* sync = (LVPAVSync*)module->private_data;
+	if (sync->sync_run == 1) {
+		sync->sync_run = 0;
+		lvp_thread_join(sync->sync_thread_t);
+	}
+	if (sync->log) {
+		lvp_log_free(sync->log);
+	}
+	if (sync->req_event) {
+		lvp_event_free(sync->req_event);
+	}
+	if (sync->update_audio_event) {
+		lvp_event_free(sync->update_audio_event);
+	}
+	if (sync->update_video_event) {
+		lvp_event_free(sync->update_video_event);
+	}
+	if (sync->aframe) {
+		av_frame_free(&sync->aframe);
+	}
+	if (sync->vframe) {
+		av_frame_free(&sync->vframe);
+	}
+	if (sync->sframe) {
+		av_frame_free(&sync->sframe);
+	}
+	lvp_mem_free(sync);
 }
 
 LVPModule lvp_avsync_module = {

@@ -211,9 +211,17 @@ static int init(struct lvp_module *module,
 static void module_close(struct lvp_module *module){
     assert(module);
     LVPCache *cache = (LVPCache*)module->private_data;
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_FRAME, handle_req_frame, cache);
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_PKT, handle_req_pkt, cache);
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_FRAME, handle_frame, cache);
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_PKT, handle_pkt, cache);
     if(cache->data){
         lvp_queue_free(cache->data);
     }
+	if (cache->log) {
+		lvp_log_free(cache->log);
+	}
+	lvp_mem_free(cache);
 }
                             
 

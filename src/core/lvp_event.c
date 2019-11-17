@@ -26,7 +26,7 @@ LVPEventListener *lvp_event_listener_alloc(){
 }
 
 void lvp_event_listener_free(LVPEventListener *l){
-    free(l);
+    lvp_mem_free(l);
 }
 
 ///
@@ -45,7 +45,7 @@ void lvp_event_handler_free(LVPEventHandler *h){
     if(h->listeners){
         lvp_list_free(h->listeners);
     }
-    free(h);
+    lvp_mem_free(h);
 }
 
 static void lvp_event_handler_custom_free(void *h, void *usr_data){
@@ -97,6 +97,26 @@ int lvp_event_control_add_listener(LVPEventControl *ctl,
     return LVP_OK;
 }
 
+void lvp_event_control_remove_listener(LVPEventControl* ctl, const char* key, lvp_event_call call, void *usrdata) {
+	assert(ctl);
+	assert(key);
+	assert(call);
+	LVPEventHandler* h = lvp_map_get(ctl->handlers, key);
+	if (!h) {
+		return;
+	}
+	LVPListEntry* entry = h->listeners->entrys;
+	while(entry)
+	{
+		LVPEventListener* l = (LVPEventListener*)entry->data;
+		if (l->call == call && l->usr_data == usrdata) {
+			lvp_list_remove(h->listeners, l);
+			return;
+		}
+		entry = entry->next;
+	}
+}
+
 int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
     assert(ctl);
     assert(ev);
@@ -109,6 +129,13 @@ int lvp_event_control_send_event(LVPEventControl *ctl, LVPEvent *ev){
         return LVP_E_NO_MEDIA;
     }
     LVPListEntry *listener_entry = h->listeners->entrys;
+	if (listener_entry == NULL)
+	{
+        if(ev->must_handle == LVP_TRUE){
+            lvp_waring(NULL,"no handler for %s",ev->event_name);
+        }
+		return LVP_E_NO_MEDIA;
+	}
     int ret = 0;
     while (listener_entry)
     {
