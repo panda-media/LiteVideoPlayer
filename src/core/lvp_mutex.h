@@ -1,14 +1,8 @@
-#ifndef LVP_MUTEX_H_
-#define LVP_MUTEX_H_
+#ifndef _LVP_MUTEX_H_
+#define _LVP_MUTEX_H_
 #include "lvp_core.h"
 
-#ifdef LVP_WIN32
-typedef CRITICAL_SECTION lvp_mutex;
-#endif // LVP_WIN32
-#ifdef LVP_LINUX
-#include <pthread.h>
-typedef pthread_mutex_t lvp_mutex;
-#endif // LVP_LINUX
+
 
 
 LVP_BOOL lvp_mutex_create(lvp_mutex* mutex);

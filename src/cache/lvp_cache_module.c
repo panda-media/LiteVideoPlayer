@@ -2,7 +2,8 @@
 
 
 static void cache_custom_pkt_free(void *data, void *usrdata){
-    av_packet_free((AVPacket **)&data);
+	if(data!=NULL)
+		av_packet_free((AVPacket **)&data);
 }
 static void cache_custom_frame_free(void *data, void *usrdata){
     av_frame_free((AVFrame**)&data);

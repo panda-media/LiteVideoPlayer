@@ -26,8 +26,18 @@ typedef struct lvp_map LVPMap;
 typedef struct lvp_event_control LVPEventControl;
 typedef struct lvp_list LVPList;
 
+#ifdef LVP_WIN32
+typedef CRITICAL_SECTION lvp_mutex;
+#endif // LVP_WIN32
+#ifdef LVP_LINUX
+#include <pthread.h>
+typedef pthread_mutex_t lvp_mutex;
+#endif // LVP_LINUX
+
 #include "lvp_mem.h"
 #include "lvp_str.h"
+#include "lvp_mutex.h"
+#include "lvp_thread.h"
 #include "lvp_log.h"
 #include "lvp_time.h"
 #include "lvp_list.h"
@@ -35,8 +45,6 @@ typedef struct lvp_list LVPList;
 #include "lvp_queue.h"
 #include "lvp_stack.h"
 #include "lvp_event.h"
-#include "lvp_thread.h"
-#include "lvp_mutex.h"
 #include "lvp_semaphore.h"
 #include "lvp_module.h"
 
