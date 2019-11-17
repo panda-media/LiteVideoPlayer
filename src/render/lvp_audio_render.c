@@ -90,6 +90,7 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
     return LVP_OK;
     //test code 
     
+
     AVFrame *frame = (AVFrame*)ev->data;
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
 
@@ -162,6 +163,7 @@ static int module_init(struct lvp_module *module,
 
 static void module_close(struct lvp_module *module){
     assert(module);
+
 	LVPAudioRender* r = (LVPAudioRender*)module->private_data;
 	if (r->audio_deviece >= 2) {
 		SDL_PauseAudioDevice(r->audio_deviece, 1);
@@ -178,6 +180,7 @@ static void module_close(struct lvp_module *module){
 	}
 	lvp_mem_free(r);
 	module->private_data = NULL;
+
 }
 
 LVPModule lvp_audio_render = {

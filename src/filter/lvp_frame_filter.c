@@ -12,6 +12,7 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
     assert(ev);
     LVPFrameFilter *f = (LVPFrameFilter*)usr_data;
 
+
 	AVFrame* src_frame = av_frame_clone(ev->data);
 	LVPEvent* sub_event = lvp_event_alloc(src_frame, LVP_EVENT_FILTER_GOT_FRAME, LVP_FALSE);
     lvp_event_control_send_event(f->ctl,sub_event);
@@ -23,6 +24,7 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
 	//filter change data, and free src_frame;
 	src_frame = (AVFrame*)sub_event->data;
 	av_frame_free(&src_frame);
+
 
 	lvp_event_free(must_handle_ev);
 	lvp_event_free(sub_event);

@@ -24,6 +24,7 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 		return LVP_OK;
 	}
 
+
 	if (usrdata == NULL) {
 		return LVP_E_USE_NULL;
 	}
@@ -48,6 +49,7 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 		r->src.channels = frame->channels;
 		r->src.sample_rate = frame->sample_rate;
 
+
 		lvp_mutex_lock(&r->mutex);
 		if(r->swr){
 			swr_close(r->swr);
@@ -65,10 +67,14 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 		int ret = swr_init(r->swr);
 		if(ret<0){
 			lvp_error(r->log,"swr init error",NULL);
+
 			lvp_mutex_unlock(&r->mutex);
 			return LVP_E_FATAL_ERROR;
 		}
 			lvp_mutex_unlock(&r->mutex);
+
+			return LVP_E_FATAL_ERROR;
+		}
 	}
 
 	AVFrame *dstframe = av_frame_alloc();
@@ -83,6 +89,7 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
+
 	lvp_mutex_lock(&r->mutex);
 	ret = swr_convert(r->swr,dstframe->data,dstframe->nb_samples,(const uint8_t **)frame->data,frame->nb_samples);
 	lvp_mutex_unlock(&r->mutex);
@@ -117,8 +124,8 @@ static int filter_init(struct lvp_module* module,
 	r->src.format = AV_SAMPLE_FMT_NONE;
 	r->ctl = ctl;
 
-	lvp_mutex_create(&r->mutex);
 
+	lvp_mutex_create(&r->mutex);
 	int ret = lvp_event_control_add_listener(r->ctl,LVP_EVENT_FILTER_GOT_FRAME,handle_frame,r);
 	if(ret != LVP_OK){
 		lvp_error(r->log,"add %s listener error",LVP_EVENT_FILTER_GOT_FRAME);
@@ -131,6 +138,7 @@ static int filter_init(struct lvp_module* module,
 }
 
 static void filter_close(struct lvp_module* module){
+
 	LVPAudioResample* r = (LVPAudioResample*)module->private_data;
 
 	lvp_event_control_remove_listener(r->ctl, LVP_EVENT_FILTER_GOT_FRAME, handle_frame, r);
@@ -144,6 +152,7 @@ static void filter_close(struct lvp_module* module){
 	}
 	lvp_mem_free(r);
 	module->private_data = NULL;
+
 }
 
 LVPModule lvp_audio_resample= {
