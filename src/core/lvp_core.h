@@ -23,7 +23,7 @@ typedef void(*lvp_custom_log)(const char *log,void *usr_data);
 
 typedef struct lvp_log LVPLog;
 typedef struct lvp_map LVPMap;
-typedef struct lvp_event_control LVPEventControl;
+typedef struct lvp_event_control LVPEventControl;  
 typedef struct lvp_list LVPList;
 
 #ifdef LVP_WIN32
