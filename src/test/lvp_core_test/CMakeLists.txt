@@ -25,7 +25,7 @@ add_executable(
     ../../core/lvp_thread.c
     ../../core/lvp_mutex.c
     ../../core/lvp_str.c
-    ../../core/lvp_queue.c
+    ../../core/lvp_nqueue.c
 	../../core/lvp_avsync.c
 
 

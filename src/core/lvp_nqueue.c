@@ -4,27 +4,16 @@ LVPNQueue *lvp_nqueue_alloc(int cap){
     LVPNQueue *q = (LVPNQueue*)lvp_mem_mallocz(sizeof(*q));
     q->cap = cap;
     q->datas = lvp_mem_mallocz(sizeof(LVPQueueEntry)*cap);
+	for (size_t i = 0; i < cap; i++)
+	{
+		q->datas[i] = lvp_mem_mallocz(sizeof(LVPQueueEntry));
+	}
     return q;
 }
 
 void lvp_nqueue_free(LVPNQueue *q){
-    for (size_t i = 0; i < q->size; i++)
-    {
-        if (q->rpos == q->cap)
-        {
-            q->rpos = 0;
-        }
-
-        LVPQueueEntry *entry = q->datas[q->rpos];
-        if(entry->need_free == LVP_TRUE){
-            if(entry->free){
-                entry->free(entry->data,entry->usr_data);
-            }else
-            {
-                lvp_mem_free(entry->data);
-            }
-        }
-    }
+  
+	lvp_nqueue_clear(q);
 
     for (size_t i = 0; i < q->cap; i++)
     {
@@ -37,7 +26,7 @@ void lvp_nqueue_free(LVPNQueue *q){
 
 int lvp_nqueue_push(LVPNQueue *q, void *data,void *usr_data, lvp_custom_free free,LVP_BOOL need_free){
     if(q->size==q->cap){
-        return LVP_E_NO_MEM;
+        return LVP_FALSE;
     }
     LVPQueueEntry *entry = q->datas[q->wpos];
     entry->data = data;
@@ -46,17 +35,50 @@ int lvp_nqueue_push(LVPNQueue *q, void *data,void *usr_data, lvp_custom_free fre
     entry->free = free;
     q->wpos++;
     q->size++;
-    return LVP_OK;
+	if (q->wpos == q->cap) {
+		q->wpos = 0;
+	}
+    return LVP_TRUE;
 }
 
-int lvp_nqueue_pop(LVPNQueue *q, void **data){
+void* lvp_nqueue_pop(LVPNQueue *q){
     if(q->size==0){
-        return LVP_E_NO_MEDIA;
+        return NULL;
     }
     LVPQueueEntry *entry = q->datas[q->rpos];
-    void *p = *data;
-    p = entry->data;
-    q->rpos--;
+    q->rpos++;
+	if (q->rpos == q->cap) {
+		q->rpos = 0;
+	}
     q->size--;
-    return LVP_OK;
+    return entry->data;
+}
+
+void* lvp_nqueue_clear(LVPNQueue* q)
+{
+
+	while (q->size>0)
+	{
+		if (q->rpos == q->cap)
+		{
+			q->rpos = 0;
+		}
+
+		LVPQueueEntry* entry = q->datas[q->rpos];
+		if (entry->need_free == LVP_TRUE) {
+			if (entry->free) {
+				entry->free(entry->data, entry->usr_data);
+			}
+			else
+			{
+				lvp_mem_free(entry->data);
+			}
+		}
+		q->size--;
+		q->rpos++;
+	}
+	q->rpos = 0;
+	q->wpos = 0;
+	q->size = 0;
+	return NULL;
 }

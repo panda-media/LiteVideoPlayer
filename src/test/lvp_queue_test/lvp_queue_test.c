@@ -13,12 +13,12 @@ int main(){
     int *data = NULL ;
     for (size_t i = 0; i < 100; i++)
     {
-        int ret = lvp_nqueue_pop(q,&data);
-        test_cond("pop queue",ret == LVP_OK && *data == i);
+        int *ret = lvp_nqueue_pop(q);
+        test_cond("pop queue",*ret == i);
     }
 
-    ret = lvp_nqueue_pop(q,&data);
-    test_cond("pop no data",ret == LVP_E_NO_MEDIA );
+    ret = lvp_nqueue_pop(q);
+    test_cond("pop no data",ret == NULL);
 
     test_report();
 

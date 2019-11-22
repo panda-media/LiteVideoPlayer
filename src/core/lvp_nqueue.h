@@ -5,7 +5,6 @@
 typedef struct lvp_queue_entry{
     void *data;
     void *usr_data;
-    int need_free;
     lvp_custom_free free;
     LVP_BOOL need_free;
 }LVPQueueEntry;
@@ -25,6 +24,8 @@ void lvp_nqueue_free(LVPNQueue *q);
 
 int lvp_nqueue_push(LVPNQueue *q, void *data,void *usr_data, lvp_custom_free free, LVP_BOOL need_free);
 
-int lvp_nqueue_pop(LVPNQueue *q, void **data);
+void *lvp_nqueue_pop(LVPNQueue *q);
+
+void* lvp_nqueue_clear(LVPNQueue* q);
 
 #endif // !_LVP_NQUEUE_H_

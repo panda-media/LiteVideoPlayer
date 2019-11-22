@@ -34,6 +34,7 @@ static void sync_audio_master(LVPAVSync *sync){
         int ret = lvp_event_control_send_event(sync->ctl,sync->update_audio_event);
 
         sync->audio_time = *(uint64_t*)sync->update_audio_event->data;
+		sync->audio_time = sync->aframe->pts - sync->audio_time;
         if(ret == LVP_OK){
             av_frame_unref(sync->aframe);
             av_frame_free(&sync->aframe);

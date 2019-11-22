@@ -68,7 +68,6 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 			return LVP_E_FATAL_ERROR;
 		}
 
-		return LVP_E_FATAL_ERROR;
 	}
 
 	AVFrame* dstframe = av_frame_alloc();

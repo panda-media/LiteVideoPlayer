@@ -139,7 +139,7 @@ static void* decoder_thread(void *data){
 			av_packet_free(&d->ipkt);
             break;
         }
-        if(ret == AVERROR(EAGAIN)){
+        else if(ret == AVERROR(EAGAIN)){
             need_req = 0;
         }else{
 			av_packet_free(&d->ipkt);
@@ -179,7 +179,7 @@ static void* decoder_thread(void *data){
                 break;
             }
             if(ret == LVP_E_NO_MEM && d->decoder_thread_run == 1){
-                lvp_sleep(1);
+                lvp_sleep(50);
                 goto retry;
             }
         }

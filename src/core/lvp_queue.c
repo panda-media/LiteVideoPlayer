@@ -1,4 +1,4 @@
-#include "lvp_queue.h"
+/*#include "lvp_queue.h"
 #include <stdlib.h>
 
 void lvp_queue_add_cap(LVPQueue* queue)
@@ -266,3 +266,4 @@ LVP_BOOL lvp_queue_back(LVPQueue * queue, void ** data, void ** usrData)
 
     return LVP_TRUE;
 }
+*/

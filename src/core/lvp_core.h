@@ -43,6 +43,7 @@ typedef pthread_mutex_t lvp_mutex;
 #include "lvp_list.h"
 #include "lvp_map.h"
 #include "lvp_queue.h"
+#include "lvp_nqueue.h"
 #include "lvp_stack.h"
 #include "lvp_event.h"
 #include "lvp_semaphore.h"

@@ -4,7 +4,7 @@
 int handle_update(LVPEvent *ev,void *usrdata){
 
     //todo test
-    return LVP_OK;
+   /* return LVP_OK;*/
     //test code 
 
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
@@ -35,7 +35,6 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	{
 
     //for test
-
 		SDL_UpdateYUVTexture(r->texture, NULL,
 			f->data[0], f->linesize[0],
 			f->data[1], f->linesize[1]/2,
@@ -61,8 +60,8 @@ static int module_init(struct lvp_module *module,
     assert(log);
 
     //todo test
-    lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
-    return LVP_OK;
+   // lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
+   // return LVP_OK;
     //test code 
 
 

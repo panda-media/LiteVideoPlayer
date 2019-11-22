@@ -12,12 +12,11 @@ static void cache_custom_frame_free(void *data, void *usrdata){
 static int handle_pkt(LVPEvent *ev, void *usr_data){
     LVPCache *cache = (LVPCache*)usr_data;
     AVPacket *pkt = (AVPacket*)ev->data;
-    if(cache->handle_stream->index != pkt->stream_index){
+    if(cache->handle_stream == NULL || cache->handle_stream->index != pkt->stream_index){
         return LVP_OK;
     }
     int64_t size = 0;
-    lvp_queue_size(cache->data,&size);
-    if(size >= cache->max_size){
+    if(cache->data->size >= cache->max_size){
         return LVP_E_NO_MEM;
     }
 	//printf("cache type:%d size:%ld\n", cache->media_type, size);
@@ -28,7 +27,7 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
         return LVP_E_FATAL_ERROR;
     }
 
-    int ret = lvp_queue_push(cache->data,refpkt,NULL,cache_custom_pkt_free,1);
+    int ret = lvp_nqueue_push(cache->data,refpkt,NULL,cache_custom_pkt_free,LVP_TRUE);
     if(ret == LVP_FALSE){
         return LVP_E_FATAL_ERROR;
     }
@@ -42,22 +41,22 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
         return LVP_OK;
     }
     int64_t size = 0;
-    lvp_queue_size(cache->data,&size);
-    if(size==0){
+    if(cache->data->size ==0 ){
        // printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
     }
     AVPacket *p = NULL;
-    LVP_BOOL ret = lvp_queue_front(cache->data,(void **)&p,NULL);
-    if(ret == LVP_FALSE || p == NULL){
+	p = (AVPacket*)lvp_nqueue_pop(cache->data);
+    if(p == NULL){
+		lvp_error(cache->log, "cache queue error", NULL);
         return LVP_E_FATAL_ERROR;
     }
     if(p->pts<0){
+		lvp_error(cache->log, "cache queue error", NULL);
         return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);
     ev->data = ref;
-    lvp_queue_pop(cache->data);
     av_packet_free(&p);
     return LVP_OK;
 }
@@ -71,9 +70,7 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
 		return LVP_OK;
 	}
 
-    int64_t size = 0;
-    lvp_queue_size(cache->data,&size);
-    if(size >= cache->max_size){
+    if(cache->data->size >= cache->max_size){
         return LVP_E_NO_MEM;
     }
 
@@ -83,7 +80,7 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
         return LVP_E_FATAL_ERROR;
     }
 
-    int ret = lvp_queue_push(cache->data,refframe,NULL,cache_custom_frame_free,1);
+    int ret = lvp_nqueue_push(cache->data,refframe,NULL,cache_custom_frame_free,1);
     if(ret == LVP_FALSE){
         return LVP_E_FATAL_ERROR;
     }
@@ -97,16 +94,17 @@ static int handle_req_frame(LVPEvent *ev, void *usrdata){
     if(type != cache->media_type){
         return LVP_OK;
     }
-    int64_t size =0;
-    LVP_BOOL ret = lvp_queue_size(cache->data,&size);
-    if(size==0 || ret == LVP_FALSE){
+    if(cache->data->size == 0){
         return LVP_E_NO_MEM;
     }
     AVFrame *f = NULL;
-    lvp_queue_front(cache->data,(void**)&f,NULL);
+	f = (AVFrame*)lvp_nqueue_pop(cache->data);
+	if (f == NULL)
+	{
+		return LVP_E_NO_MEM;
+	}
     AVFrame *ref = av_frame_clone(f);
     ev->data = ref;
-    lvp_queue_pop(cache->data);
     av_frame_free(&f);
     return LVP_OK;
 }
@@ -137,7 +135,7 @@ static int init_frame_cache(LVPCache *cache){
 
 static int handle_seek(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
-    LVP_BOOL ret = lvp_queue_clear(cache->data);
+    LVP_BOOL ret = lvp_nqueue_clear(cache->data);
     if(ret == LVP_TRUE){
         return LVP_OK;
     }else{
@@ -182,8 +180,6 @@ static int init(struct lvp_module *module,
     cache->log->usr_data = log->usr_data;
     cache->ctl = ctl;
 
-    cache->data = lvp_queue_create();
-
     int ret = LVP_OK;
     if(cache->type == CACHE_TYPE_FRAME){
         cache->max_size = FRAME_SIZE;
@@ -193,6 +189,8 @@ static int init(struct lvp_module *module,
         cache->max_size = PKT_SIZE;
         ret = init_pkt_cache(cache);
     }
+
+	cache->data = lvp_nqueue_alloc(cache->max_size);
 
     if(ret!=LVP_OK){
         return ret;
@@ -217,7 +215,7 @@ static void module_close(struct lvp_module *module){
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_FRAME, handle_frame, cache);
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_PKT, handle_pkt, cache);
     if(cache->data){
-        lvp_queue_free(cache->data);
+        lvp_nqueue_free(cache->data);
     }
 	if (cache->log) {
 		lvp_log_free(cache->log);
