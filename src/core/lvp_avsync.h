@@ -16,15 +16,18 @@ typedef struct lvp_avsync
     int sync_run;
     int has_video; 
     int has_audio;
+	int has_sub;
     uint64_t ex_time;
 
     AVFrame *aframe;
     AVFrame *vframe;
-    AVFrame *sframe;
+	AVSubtitle* sub;
 
     LVPEvent *req_event;
+	LVPEvent* req_sub_event;
     LVPEvent *update_audio_event;
     LVPEvent *update_video_event;
+	LVPEvent* update_sub_event;
 }LVPAVSync;
 
 

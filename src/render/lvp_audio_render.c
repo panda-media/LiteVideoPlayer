@@ -31,6 +31,7 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
         printf("LAG\n");
     }
 	lvp_mutex_unlock(&r->buf_mutex);
+	
 
     SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
 	//SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
@@ -62,7 +63,7 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = 512;
+    wanted.samples = 256;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;

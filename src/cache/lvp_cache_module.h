@@ -6,6 +6,7 @@
 
 #define CACHE_TYPE_PKT      0
 #define CACHE_TYPE_FRAME    1
+#define CACHE_TYPE_SUBTITLE 2
 
 #define PKT_SIZE 300
 #define FRAME_SIZE 10

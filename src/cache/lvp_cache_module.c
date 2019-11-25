@@ -9,6 +9,10 @@ static void cache_custom_frame_free(void *data, void *usrdata){
     av_frame_free((AVFrame**)&data);
 }
 
+static void cache_custom_sub_free(void* data, void* usrdata) {
+	avsubtitle_free((AVSubtitle*)data);
+}
+
 static int handle_pkt(LVPEvent *ev, void *usr_data){
     LVPCache *cache = (LVPCache*)usr_data;
     AVPacket *pkt = (AVPacket*)ev->data;
@@ -72,7 +76,7 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
         return LVP_E_NO_MEM;
     }
 
-    AVFrame *refframe = av_frame_clone(ev->data);
+    AVFrame *refframe = av_frame_clone(f);
     if(refframe== NULL){
         lvp_error(cache->log,"clone frame error",NULL);
         return LVP_E_FATAL_ERROR;
@@ -84,6 +88,35 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
     }
 
     return LVP_OK;
+}
+
+static int handle_sub(LVPEvent* ev, void* usrdata) {
+	LVPCache* cache = (LVPCache*)usrdata;
+	AVSubtitle* sub = (AVSubtitle*)ev->data;
+	if (cache->data->size >= cache->max_size) {
+		return LVP_E_NO_MEM;
+	}
+
+	int ret = lvp_nqueue_push(cache->data, sub, NULL,cache_custom_sub_free,1);
+	if (ret == LVP_FALSE) {
+		return LVP_E_FATAL_ERROR;
+	}
+	return LVP_OK;
+}
+
+static int handle_req_sub(LVPEvent* ev, void* usrdata) {
+	LVPCache* cache = (LVPCache*)usrdata;
+	if (cache->data->size == 0)
+	{
+		return LVP_E_NO_MEM;
+	}
+	AVSubtitle* sub = NULL;
+	sub = (AVSubtitle*)lvp_nqueue_pop(cache->data);
+	if (sub == NULL) {
+		return LVP_E_NO_MEM;
+	}
+	ev->data = sub;
+	return LVP_OK;
 }
 
 static int handle_req_frame(LVPEvent *ev, void *usrdata){
@@ -111,10 +144,12 @@ static int init_pkt_cache(LVPCache *cache){
     int ret = lvp_event_control_add_listener(cache->ctl,LVP_EVENT_FILTER_SEND_PKT,handle_pkt,cache);
     if(ret!=LVP_OK){
         lvp_error(cache->log,"listener %s error",LVP_EVENT_FILTER_SEND_PKT);
+		return ret;
     }
     ret = lvp_event_control_add_listener(cache->ctl,LVP_EVENT_REQ_PKT,handle_req_pkt,cache);
     if(ret != LVP_OK){
         lvp_error(cache->log,"listener %s error",LVP_EVENT_REQ_PKT);
+		return ret;
     }
     return LVP_OK;
 }
@@ -122,14 +157,31 @@ static int init_pkt_cache(LVPCache *cache){
 static int init_frame_cache(LVPCache *cache){
     int ret = lvp_event_control_add_listener(cache->ctl,LVP_EVENT_FILTER_SEND_FRAME,handle_frame,cache);
     if(ret != LVP_OK){
-        lvp_error(cache->log,"listenner %s error",LVP_EVENT_FILTER_SEND_FRAME);
+        lvp_error(cache->log,"listener %s error",LVP_EVENT_FILTER_SEND_FRAME);
+		return ret;
     }
     ret = lvp_event_control_add_listener(cache->ctl,LVP_EVENT_REQ_FRAME,handle_req_frame,cache);
     if(ret != LVP_OK){
         lvp_error(cache->log,"listener %s error",LVP_EVENT_REQ_FRAME);
+		return ret;
     }
     return LVP_OK;
 }
+
+static int init_sub_cache(LVPCache* cache) {
+	int ret = lvp_event_control_add_listener(cache->ctl, LVP_EVENT_DECODER_SEND_SUB, handle_sub, cache);
+	if (ret != LVP_OK) {
+		lvp_error(cache->log, "listener %s error", LVP_EVENT_DECODER_SEND_SUB);
+		return ret;
+	}
+	ret = lvp_event_control_add_listener(cache->ctl, LVP_EVENT_REQ_SUB, handle_req_sub, cache);
+	if (ret != LVP_OK) {
+		lvp_error(cache->log, "listener %s error", LVP_EVENT_REQ_SUB);
+		return ret;
+	}
+	return LVP_OK;
+}
+
 
 static int handle_seek(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
@@ -160,15 +212,23 @@ static int init(struct lvp_module *module,
     else if(!strcmp(module->name,"LVP_VIDEO_PKT_CACHE")){
         cache->type = CACHE_TYPE_PKT;
         cache->media_type = AVMEDIA_TYPE_VIDEO;
-    }
+	}
+	else if(!strcmp(module->name,"LVP_SUB_PKT_CACHE")){
+        cache->type = CACHE_TYPE_PKT;
+		cache->media_type = AVMEDIA_TYPE_SUBTITLE;
+	}
     else if(!strcmp(module->name,"LVP_AUDIO_FRAME_CACHE")){
         cache->type = CACHE_TYPE_FRAME;
         cache->media_type = AVMEDIA_TYPE_AUDIO;
     }
-    else{
+    else if(!strcmp(module->name,"LVP_VIDEO_FRAME_CACHE")){
         cache->type = CACHE_TYPE_FRAME;
         cache->media_type = AVMEDIA_TYPE_VIDEO;
-    }
+	}
+	else if (!strcmp(module->name, "LVP_SUB_FRAME_CACHE")) {
+        cache->type = CACHE_TYPE_SUBTITLE;
+        cache->media_type = AVMEDIA_TYPE_VIDEO;
+	}
     cache->log = lvp_log_alloc(module->name);
     cache->log->log_call = log->log_call;
     cache->log->usr_data = log->usr_data;
@@ -179,10 +239,14 @@ static int init(struct lvp_module *module,
         cache->max_size = FRAME_SIZE;
         ret = init_frame_cache(cache);
     }
-    else{
+    else if(cache->type == CACHE_TYPE_PKT){
         cache->max_size = PKT_SIZE;
         ret = init_pkt_cache(cache);
-    }
+	}
+	else if (cache->type == CACHE_TYPE_SUBTITLE) {
+        cache->max_size = PKT_SIZE;
+		ret = init_sub_cache(cache);
+	}
 
 	cache->data = lvp_nqueue_alloc(cache->max_size);
 
@@ -239,6 +303,16 @@ LVPModule lvp_video_pkt_cache_module = {
     .module_close = module_close,
 };
 
+LVPModule lvp_sub_pkt_cache_module = {
+    .version = lvp_version,
+    .name = "LVP_SUB_PKT_CACHE",
+    .type = LVP_MODULE_CORE,
+    .private_data_size = sizeof(LVPCache),
+    .private_data = NULL,
+    .module_init = init, 
+    .module_close = module_close,
+};
+
 LVPModule lvp_audio_frame_cache_module = {
     .version = lvp_version,
     .name = "LVP_AUDIO_FRAME_CACHE",
@@ -252,6 +326,16 @@ LVPModule lvp_audio_frame_cache_module = {
 LVPModule lvp_video_frame_cache_module = {
     .version = lvp_version,
     .name = "LVP_VIDEO_FRAME_CACHE",
+    .type = LVP_MODULE_CORE,
+    .private_data_size = sizeof(LVPCache),
+    .private_data = NULL,
+    .module_init = init, 
+    .module_close = module_close,
+};
+
+LVPModule lvp_sub_frame_cache_module = {
+    .version = lvp_version,
+    .name = "LVP_SUB_FRAME_CACHE",
     .type = LVP_MODULE_CORE,
     .private_data_size = sizeof(LVPCache),
     .private_data = NULL,

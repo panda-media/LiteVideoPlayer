@@ -194,6 +194,67 @@ static void* decoder_thread(void *data){
     return NULL;
 }
 
+static void* sub_decoder_thread(void* data) {
+	LVPDecoder* d = (LVPDecoder*)data;
+	lvp_debug(d->log, "in decoder thread type %d", d->codec_type);
+	d->decoder_thread_run = 1;
+	LVPEvent* ev = lvp_event_alloc(NULL, LVP_EVENT_REQ_PKT, LVP_TRUE);
+	LVPEvent* sev = lvp_event_alloc(NULL, LVP_EVENT_DECODER_SEND_SUB, LVP_TRUE);
+	int need_req = 1;
+	while (d->decoder_thread_run == 1)
+	{
+		int ret = 0;
+		if (need_req == 1) {
+			ev->data = &d->codec_type;
+			ret = lvp_event_control_send_event(d->ctl, ev);
+			if (ret == LVP_E_NO_MEM) {
+				//字幕不需要太高的刷新率
+				lvp_sleep(500);
+				continue;
+			}
+			else if (ret != LVP_OK)
+			{
+				lvp_error(d->log, "req pkt error", NULL);
+				break;
+			}
+		}
+
+        d->ipkt = (AVPacket*)ev->data;
+		AVSubtitle *sub = lvp_mem_mallocz(sizeof(*sub));
+		int got = 0;
+		ret = avcodec_decode_subtitle2(d->avctx, sub, &got, d->ipkt);
+		if (got == 0)
+		{
+			continue;
+		}
+		if(sub->start_display_time == 0 && sub->end_display_time == 0){
+			sub->start_display_time = d->ipkt->pts;
+			sub->end_display_time = d->ipkt->dts+d->ipkt->pts;
+			sub->pts = d->ipkt->pts;
+		}
+
+		need_req = 1;
+		sev->data = sub;
+		retry:
+		ret = lvp_event_control_send_event(d->ctl,sev);
+		if (ret != LVP_OK && ret != LVP_E_NO_MEM) {
+			break;
+		}
+		if (ret == LVP_E_NO_MEM && d->decoder_thread_run == 1) {
+			lvp_sleep(500);
+			goto retry;
+		}
+	}
+
+	d->decoder_thread_run = 0;
+
+	lvp_event_free(ev);
+	lvp_event_free(sev);
+
+	lvp_debug(d->log, "out decoder thread type %d", d->codec_type);
+	return NULL;
+}
+
 static int init_video_decoder(LVPDecoder *decoder){
     AVStream *stream = decoder->stream;
     int ret = find_best_video_decoder(decoder);
@@ -209,7 +270,11 @@ static int init_video_decoder(LVPDecoder *decoder){
     }
 	decoder->avctx->thread_count = 2;
 	decoder->avctx->thread_type = FF_THREAD_FRAME;
-	lvp_set_up_hwaccel_decoder(decoder);
+	const char* no_hw = lvp_map_get(decoder->options, "lvpnhw");
+	if (no_hw==NULL||strcmp(no_hw,"1"))
+	{
+		lvp_set_up_hwaccel_decoder(decoder);
+	}
     //todo set options
     ret = avcodec_open2(decoder->avctx,decoder->codec,NULL);
     if(ret < 0){
@@ -217,6 +282,29 @@ static int init_video_decoder(LVPDecoder *decoder){
         return LVP_E_FATAL_ERROR;
     }
     return LVP_OK;
+}
+
+static int init_sub_decoder(LVPDecoder* decoder) {
+	AVStream* stream = decoder->stream;
+	decoder->codec = avcodec_find_decoder(stream->codecpar->codec_id);
+	if (decoder->codec == NULL) {
+		lvp_error(decoder->log, "can not find decoder for codec id %d", stream->codecpar->codec_id);
+		return LVP_E_FATAL_ERROR;
+	}
+	decoder->avctx = avcodec_alloc_context3(decoder->codec);
+	if (decoder->avctx == NULL) {
+		lvp_error(decoder->log, "alloc context error", NULL);
+		return LVP_E_NO_MEM;
+	}
+	avcodec_parameters_to_context(decoder->avctx, stream->codecpar);
+
+	int ret = avcodec_open2(decoder->avctx, decoder->codec, NULL);
+	if (ret != LVP_OK) {
+		lvp_error(decoder->log, "open avcodec error", NULL);
+		return LVP_E_FATAL_ERROR;
+	}
+	return LVP_OK;
+
 }
 
 static int handle_select_stream(LVPEvent *ev, void *usrdata){
@@ -234,7 +322,12 @@ static int handle_select_stream(LVPEvent *ev, void *usrdata){
         ret = init_audio_decoder(decoder);
     }else if(decoder->codec_type == AVMEDIA_TYPE_VIDEO){
         ret = init_video_decoder(decoder);
-    }
+	}
+	else if (decoder->codec_type == AVMEDIA_TYPE_SUBTITLE) {
+		ret = init_sub_decoder(decoder);
+		ret |= lvp_thread_create(&decoder->dec_thread,sub_decoder_thread,decoder);
+		return ret;
+	}
 
     if(ret != LVP_OK){
         return ret;
@@ -297,9 +390,13 @@ static int module_init(struct lvp_module *module,
         decoder->codec_type = AVMEDIA_TYPE_AUDIO;
     }else if(!strcmp(module->name,"LVP_VIDEO_DECODER")){
         decoder->codec_type = AVMEDIA_TYPE_VIDEO;
-    }else{
+    }else if(!strcmp(module->name,"LVP_SUB_DECODER")){
+		decoder->codec_type = AVMEDIA_TYPE_SUBTITLE;
+	}
+	else
+	{
         return LVP_E_NO_MEDIA;
-    }
+	}
     
     return LVP_OK;
 }
@@ -352,6 +449,16 @@ LVPModule lvp_audio_decoder = {
 LVPModule lvp_video_decoder = {
     .version = lvp_version,
     .name = "LVP_VIDEO_DECODER",
+    .type = LVP_MODULE_CORE|LVP_MODULE_DECODER,
+    .private_data_size = sizeof(LVPDecoder),
+    .private_data = NULL,
+    .module_init = module_init, 
+    .module_close = module_close,
+};
+
+LVPModule lvp_sub_decoder = {
+    .version = lvp_version,
+    .name = "LVP_SUB_DECODER",
     .type = LVP_MODULE_CORE|LVP_MODULE_DECODER,
     .private_data_size = sizeof(LVPDecoder),
     .private_data = NULL,
