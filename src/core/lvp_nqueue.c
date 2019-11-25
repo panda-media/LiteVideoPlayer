@@ -54,7 +54,7 @@ void* lvp_nqueue_pop(LVPNQueue *q){
     return entry->data;
 }
 
-void* lvp_nqueue_clear(LVPNQueue* q)
+void lvp_nqueue_clear(LVPNQueue* q)
 {
 
 	while (q->size>0)
@@ -80,5 +80,5 @@ void* lvp_nqueue_clear(LVPNQueue* q)
 	q->rpos = 0;
 	q->wpos = 0;
 	q->size = 0;
-	return NULL;
+	return;
 }

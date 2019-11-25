@@ -15,7 +15,6 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     if(cache->handle_stream == NULL || cache->handle_stream->index != pkt->stream_index){
         return LVP_OK;
     }
-    int64_t size = 0;
     if(cache->data->size >= cache->max_size){
         return LVP_E_NO_MEM;
     }
@@ -40,7 +39,6 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     if(*type != cache->media_type){
         return LVP_OK;
     }
-    int64_t size = 0;
     if(cache->data->size ==0 ){
        // printf("CACHE FULL\n");
         return LVP_E_NO_MEM;
@@ -135,12 +133,8 @@ static int init_frame_cache(LVPCache *cache){
 
 static int handle_seek(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
-    LVP_BOOL ret = lvp_nqueue_clear(cache->data);
-    if(ret == LVP_TRUE){
-        return LVP_OK;
-    }else{
-        return LVP_E_FATAL_ERROR;
-    }
+    lvp_nqueue_clear(cache->data);
+    return LVP_OK;
 }
 
 static int handle_select_stream(LVPEvent *ev, void *usrdata){

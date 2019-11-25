@@ -26,6 +26,6 @@ int lvp_nqueue_push(LVPNQueue *q, void *data,void *usr_data, lvp_custom_free fre
 
 void *lvp_nqueue_pop(LVPNQueue *q);
 
-void* lvp_nqueue_clear(LVPNQueue* q);
+void lvp_nqueue_clear(LVPNQueue* q);
 
 #endif // !_LVP_NQUEUE_H_
