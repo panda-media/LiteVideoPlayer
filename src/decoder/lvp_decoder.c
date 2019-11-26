@@ -108,6 +108,7 @@ static int find_best_video_decoder(LVPDecoder *decoder){
 
 }
 
+
 static void* decoder_thread(void *data){
     LVPDecoder *d = (LVPDecoder*)data;
     lvp_debug(d->log,"in decoder thread type %d",d->codec_type);
@@ -117,45 +118,48 @@ static void* decoder_thread(void *data){
     int need_req = 1;
     d->iframe = av_frame_alloc();
 	d->sw_frame = av_frame_alloc();
-    while (d->decoder_thread_run == 1)
-    {
-        int ret = 0;
-        if(need_req == 1){
-            ev->data = &d->codec_type;
-            ret = lvp_event_control_send_event(d->ctl,ev);
-            if(ret==LVP_E_NO_MEM){
-                lvp_sleep(10);
-                continue;
-            }else if(ret != LVP_OK)
-            {
-                lvp_error(d->log,"req pkt error",NULL);
-                break;
-            }
-        }
-        d->ipkt = (AVPacket*)ev->data;
-        ret = avcodec_send_packet(d->avctx,d->ipkt);
-        if(ret<0&&ret!=AVERROR(EAGAIN)){
-            lvp_error(d->log,"send packet error %d",ret);
+	while (d->decoder_thread_run == 1)
+	{
+		int ret = 0;
+		if (need_req == 1) {
+			ev->data = &d->codec_type;
+			ret = lvp_event_control_send_event(d->ctl, ev);
+			if (ret == LVP_E_NO_MEM) {
+				lvp_sleep(10);
+				continue;
+			}
+			else if (ret != LVP_OK)
+			{
+				lvp_error(d->log, "req pkt error", NULL);
+				break;
+			}
+		}
+		d->ipkt = (AVPacket*)ev->data;
+		ret = avcodec_send_packet(d->avctx, d->ipkt);
+		if (ret < 0 && ret != AVERROR(EAGAIN)) {
+			lvp_error(d->log, "send packet error %d", ret);
 			av_packet_free(&d->ipkt);
-            break;
-        }
-        else if(ret == AVERROR(EAGAIN)){
-            need_req = 0;
-        }else{
+			break;
+		}
+		else if (ret == AVERROR(EAGAIN)) {
+			need_req = 0;
+		}
+		else {
 			av_packet_free(&d->ipkt);
-            need_req = 1;
-        }
+			need_req = 1;
+		}
 
-        ret = avcodec_receive_frame(d->avctx,d->iframe);
-        if(ret<0&&ret!=AVERROR(EAGAIN)){
-            lvp_error(d->log,"receive frame error %d",ret);
-            break;
-        }
-        if(ret == 0){
-            sev->data = d->iframe;
+		ret = avcodec_receive_frame(d->avctx, d->iframe);
+		if (ret < 0 && ret != AVERROR(EAGAIN)) {
+			lvp_error(d->log, "receive frame error %d", ret);
+			break;
+		}
+		if (ret == 0) {
+			sev->data = d->iframe;
 			//video
 			if (d->iframe->width > 0) {
 				if (d->hw_pix_fmt == d->iframe->format) {
+					av_frame_unref(d->sw_frame);
 					int ret = av_hwframe_transfer_data(d->sw_frame, d->iframe, 0);
 					if (ret < 0) {
 						lvp_error(d->log, "hwframe transer error", NULL);
@@ -163,27 +167,28 @@ static void* decoder_thread(void *data){
 					}
 					av_frame_copy_props(d->sw_frame, d->iframe);
 					sev->data = d->sw_frame;
-					LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->sw_frame);
+
+					LVPSENDEVENT(d->ctl, LVP_EVENT_DECODER_GOT_FRAME, d->sw_frame);
 				}
 				else {
-					LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->iframe);
+					LVPSENDEVENT(d->ctl, LVP_EVENT_DECODER_GOT_FRAME, d->iframe);
 				}
 			}
 			else
 			{
-				LVPSENDEVENT(d->ctl,LVP_EVENT_DECODER_GOT_FRAME,d->iframe);
+				LVPSENDEVENT(d->ctl, LVP_EVENT_DECODER_GOT_FRAME, d->iframe);
 			}
-            retry:
-            ret = lvp_event_control_send_event(d->ctl,sev);
-            if(ret != LVP_OK && ret != LVP_E_NO_MEM){
-                break;
-            }
-            if(ret == LVP_E_NO_MEM && d->decoder_thread_run == 1){
-                lvp_sleep(50);
-                goto retry;
-            }
-        }
-    }
+		retry:
+			ret = lvp_event_control_send_event(d->ctl, sev);
+			if (ret != LVP_OK && ret != LVP_E_NO_MEM) {
+				break;
+			}
+			if (ret == LVP_E_NO_MEM && d->decoder_thread_run == 1) {
+				lvp_sleep(50);
+				goto retry;
+			}
+		}
+	}
 
 	d->decoder_thread_run = 0;
     

@@ -63,7 +63,7 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = 256;
+    wanted.samples = f->nb_samples;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
@@ -83,8 +83,8 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 static int handle_audio(LVPEvent *ev, void *usrdata){
 
     //todo test
-    /*lvp_sleep(1);
-    return LVP_OK;*/
+    //lvp_sleep(1);
+    //return LVP_OK;
     //test code 
     
 

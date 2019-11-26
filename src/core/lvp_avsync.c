@@ -50,7 +50,6 @@ static void sync_audio_master(LVPAVSync *sync){
 				sync->audio_time = sync->aframe->pts - buf_time ;
 		}
         if(ret == LVP_OK){
-			//printf("APTS %lld\n", sync->aframe->pts);
             av_frame_unref(sync->aframe);
             av_frame_free(&sync->aframe);
             sync->aframe = NULL;
@@ -64,7 +63,6 @@ static void sync_audio_master(LVPAVSync *sync){
         sync->update_video_event->data = sync->vframe;
         int ret = lvp_event_control_send_event(sync->ctl,sync->update_video_event);
         if(ret == LVP_OK){
-			printf("VPTS %lld APTS %lld\n",sync->audio_time - sync->vframe->pts, sync->audio_time);
             av_frame_unref(sync->vframe);
             av_frame_free(&sync->vframe);
             sync->vframe = NULL;

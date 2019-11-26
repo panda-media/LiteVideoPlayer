@@ -15,7 +15,7 @@ int handle_update(LVPEvent *ev,void *usrdata){
 		return LVP_OK;
 	}
 
-	lvp_mutex_lock(&r->mutex);
+   	lvp_mutex_lock(&r->mutex);
     if (r->texture == NULL)
     {
 
@@ -84,8 +84,8 @@ static int module_init(struct lvp_module *module,
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
 
-    r->rect.w = 1920;
-    r->rect.h = 1080;
+    r->rect.w = 1280;
+    r->rect.h = 720;
 
     r->window = SDL_CreateWindow("Lite Video Player",SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,r->rect.w,r->rect.h,SDL_WINDOW_SHOWN);
