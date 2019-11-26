@@ -109,13 +109,19 @@ static int init_core_modules(LVPCore *core){
     //pkt cache
     ret = init_basic_module(core,"LVP_VIDEO_PKT_CACHE",NULL,LVP_MODULE_CORE);
 
+    ret = init_basic_module(core,"LVP_SUB_PKT_CACHE",NULL,LVP_MODULE_CORE);
+
     ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
     ret = init_basic_module(core,"LVP_AUDIO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
+    ret = init_basic_module(core,"LVP_SUB_FRAME_CACHE",NULL,LVP_MODULE_CORE);
+
     ret = init_basic_module(core,"LVP_AUDIO_DECODER","audio_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 
     ret = init_basic_module(core,"LVP_VIDEO_DECODER","video_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
+
+    ret = init_basic_module(core,"LVP_SUB_DECODER","sub_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
 
     ret = init_basic_module(core,"LVP_AUDIO_RENDER","audio_render",LVP_MODULE_CORE|LVP_MODULE_RENDER);
 

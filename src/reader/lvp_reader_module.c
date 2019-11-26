@@ -40,6 +40,7 @@ static void* reader_thread(void *data){
         m->vstream = fmt->streams[best_index];
     best_index = -1;
     best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_SUBTITLE,-1,-1,NULL,0);
+//	best_index = 30;
     if(best_index>=0)
         m->sub_stream = fmt->streams[best_index];
     
@@ -71,6 +72,7 @@ static void* reader_thread(void *data){
             lvp_mutex_lock(&m->avctx_mutex);
             ret = av_read_frame(fmt,&ipkt);
             lvp_mutex_unlock(&m->avctx_mutex);
+			ipkt.pts = av_q2d(fmt->streams[ipkt.stream_index]->time_base) * ipkt.pts*1000;
             need_read = LVP_FALSE;
         }
 

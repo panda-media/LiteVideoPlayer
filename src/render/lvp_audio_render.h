@@ -6,8 +6,7 @@
 typedef struct lvp_audio_render {
     LVPEventControl *ctl;
     LVPLog *log;
-    uint64_t play_time;
-	uint64_t start_time;
+	uint64_t buf_time;
 
     SDL_AudioSpec *audio_spec;
     SDL_AudioDeviceID audio_deviece;
@@ -17,7 +16,6 @@ typedef struct lvp_audio_render {
     uint64_t buf_len;
     uint64_t rpos;
     uint64_t wpos;
-	uint64_t mix_len;
 
 	lvp_mutex buf_mutex;
 }LVPAudioRender;

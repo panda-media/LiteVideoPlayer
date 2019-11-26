@@ -1,4 +1,4 @@
-#ifndef LVP_QUEUE_H_
+/*#ifndef LVP_QUEUE_H_
 #define LVP_QUEUE_H_
 
 #include "lvp_core.h"
@@ -25,4 +25,4 @@ LVP_BOOL lvp_queue_front(LVPQueue* queue, void** data, void **usrData);
 LVP_BOOL lvp_queue_back(LVPQueue* queue, void** data, void **usrData);
 
 #endif // !LVP_QUEUE_H_
-
+*/

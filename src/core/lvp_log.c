@@ -4,7 +4,7 @@
 #include <time.h>
 #endif // LVP_WIN32
 
-static int lvp_log_level = LVP_LOG_ERROR;
+static int lvp_log_level = LVP_LOG_DEBUG;
 
 void lvp_log_set_level(int level){
 	lvp_log_level = level;

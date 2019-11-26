@@ -25,15 +25,13 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
             r->rpos+=can_write;
         }
 		r->buf_len -= len;
-		r->mix_len += len;
-		r->play_time = r->mix_len * 1000 / r->audio_spec->freq / r->one_sample_size;
-		r->play_time += r->start_time;
-        //memset(mixdata,0,len);
+		r->buf_time = r->buf_len * 1000 / r->audio_spec->freq / r->one_sample_size;
     }
     else{
         printf("LAG\n");
     }
 	lvp_mutex_unlock(&r->buf_mutex);
+	
 
     SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
 	//SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
@@ -42,7 +40,6 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
 
 static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
     SDL_AudioSpec wanted;
-	r->start_time = f->pts;
     wanted.channels = f->channels;
     switch (f->format)
     {
@@ -66,7 +63,7 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = 512;
+    wanted.samples = f->nb_samples;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
@@ -86,8 +83,8 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 static int handle_audio(LVPEvent *ev, void *usrdata){
 
     //todo test
-    lvp_sleep(1);
-    return LVP_OK;
+    //lvp_sleep(1);
+    //return LVP_OK;
     //test code 
     
 
@@ -107,8 +104,9 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
     }
     int inbuf_size = one_frame_size;
     if(inbuf_size+r->buf_len > r->buf_max){
-        //tell avsync audio play time;
-        ev->data = &r->play_time;
+        //tell avsync audio buf time;
+		r->buf_time = r->buf_len * 1000 / r->audio_spec->freq / r->one_sample_size;
+        ev->data = &r->buf_time;
         return LVP_E_NO_MEM;
     }
 
@@ -127,7 +125,7 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
     }
     r->buf_len += inbuf_size;
 
-    ev->data = &r->play_time;
+    ev->data = &r->buf_time;
 	lvp_mutex_unlock(&r->buf_mutex);
     return LVP_OK;
 

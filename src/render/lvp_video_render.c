@@ -1,10 +1,11 @@
 #include "lvp_video_render.h"
 #include <libavcodec/avcodec.h>
 
+uint8_t *zero_data = NULL;
 int handle_update(LVPEvent *ev,void *usrdata){
 
     //todo test
-    return LVP_OK;
+   /* return LVP_OK;*/
     //test code 
 
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
@@ -14,12 +15,14 @@ int handle_update(LVPEvent *ev,void *usrdata){
 		return LVP_OK;
 	}
 
-	lvp_mutex_lock(&r->mutex);
+   	lvp_mutex_lock(&r->mutex);
     if (r->texture == NULL)
     {
 
 			r->texture = SDL_CreateTexture(r->renderer, SDL_PIXELFORMAT_IYUV,
 				SDL_TEXTUREACCESS_STREAMING, f->width, f->height);
+			zero_data = (uint8_t*)lvp_mem_mallocz(f->width * f->height);
+			memset(zero_data, 128, f->width * f->height);
     }
 
 	
@@ -35,11 +38,10 @@ int handle_update(LVPEvent *ev,void *usrdata){
 	{
 
     //for test
-
 		SDL_UpdateYUVTexture(r->texture, NULL,
 			f->data[0], f->linesize[0],
-			f->data[1], f->linesize[1]/2,
-			f->data[1], f->linesize[1]/2);
+			zero_data, f->linesize[1]/2,
+			zero_data, f->linesize[1]/2);
 	}
     
     SDL_RenderClear(r->renderer);
@@ -51,6 +53,13 @@ int handle_update(LVPEvent *ev,void *usrdata){
 }
 
 
+int handle_sub(LVPEvent* ev, void* usrdata) {
+	LVPVideoRender* r = (LVPVideoRender*)usrdata;
+	AVSubtitle* sub = (AVSubtitle*)ev->data;
+	printf("%s\n", sub->rects[0]->ass);
+	return LVP_OK;
+}
+
 
 static int module_init(struct lvp_module *module, 
                                     LVPMap *options,
@@ -61,8 +70,8 @@ static int module_init(struct lvp_module *module,
     assert(log);
 
     //todo test
-    lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
-    return LVP_OK;
+   // lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,NULL);
+   // return LVP_OK;
     //test code 
 
 
@@ -87,6 +96,12 @@ static int module_init(struct lvp_module *module,
 	lvp_mutex_create(&r->mutex);
 
     int ret = lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_VIDEO,handle_update,r);
+    if(ret!=LVP_OK){
+        lvp_error(r->log,"add listener error",NULL);
+        return LVP_E_FATAL_ERROR;
+    }
+
+    ret = lvp_event_control_add_listener(ctl,LVP_EVENT_UPDATE_SUB,handle_sub,r);
     if(ret!=LVP_OK){
         lvp_error(r->log,"add listener error",NULL);
         return LVP_E_FATAL_ERROR;

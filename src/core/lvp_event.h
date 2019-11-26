@@ -25,6 +25,7 @@ typedef struct lvp_event_listener{
 typedef struct lvp_event_handler{
     char *event_name;
     LVPList *listeners;
+	lvp_mutex mutex;
 }LVPEventHandler;
 
 struct lvp_event_control{

@@ -13,11 +13,10 @@ typedef struct lvp_audio_resample {
 	LVPLog* log;
 	LVPAudioFormat target;
 	LVPAudioFormat src;
-	lvp_mutex mutex;
 }LVPAudioResample;
 
-static int handle_frame(LVPEvent *ev,void *usrdata){
-	AVFrame *frame = (AVFrame*)ev->data;
+static int handle_frame(LVPEvent* ev, void* usrdata) {
+	AVFrame* frame = (AVFrame*)ev->data;
 
 	//video frame
 	if (frame->width > 0) {
@@ -28,73 +27,64 @@ static int handle_frame(LVPEvent *ev,void *usrdata){
 	if (usrdata == NULL) {
 		return LVP_E_USE_NULL;
 	}
-	LVPAudioResample *r = (LVPAudioResample*)usrdata;
-	if(r->target.format == AV_SAMPLE_FMT_NONE && frame->format > AV_SAMPLE_FMT_DBL){
+	LVPAudioResample* r = (LVPAudioResample*)usrdata;
+	if (r->target.format == AV_SAMPLE_FMT_NONE && frame->format > AV_SAMPLE_FMT_DBL) {
 		//set planner to signal planner
-		r->target.format = frame->format-5;
+		r->target.format = frame->format - 5;
 		//r->target.format = AV_SAMPLE_FMT_S16;
 		r->target.channels = frame->channels;
 		r->target.sample_rate = frame->sample_rate;
 	}
 
-    if(r->target.format == AV_SAMPLE_FMT_NONE){
+	if (r->target.format == AV_SAMPLE_FMT_NONE) {
 		return LVP_OK;
 	}
 
-	if(frame->format != r->src.format ||
+	if (frame->format != r->src.format ||
 		frame->channels != r->src.channels ||
-		frame->sample_rate != r->src.sample_rate){
+		frame->sample_rate != r->src.sample_rate) {
 
 		r->src.format = frame->format;
 		r->src.channels = frame->channels;
 		r->src.sample_rate = frame->sample_rate;
 
 
-		lvp_mutex_lock(&r->mutex);
-		if(r->swr){
+		if (r->swr) {
 			swr_close(r->swr);
 			swr_free(&r->swr);
 		}
 
-		r->swr = swr_alloc_set_opts(NULL,av_get_default_channel_layout(r->target.channels),
-		r->target.format,r->target.sample_rate,frame->channel_layout,frame->format,frame->sample_rate,
-		0,0);
-		if(r->swr == NULL){
-			lvp_error(r->log,"audio resample error",NULL);
-			lvp_mutex_unlock(&r->mutex);
+		r->swr = swr_alloc_set_opts(NULL, av_get_default_channel_layout(r->target.channels),
+			r->target.format, r->target.sample_rate, frame->channel_layout, frame->format, frame->sample_rate,
+			0, 0);
+		if (r->swr == NULL) {
+			lvp_error(r->log, "audio resample error", NULL);
 			return LVP_E_FATAL_ERROR;
 		}
 		int ret = swr_init(r->swr);
-		if(ret<0){
-			lvp_error(r->log,"swr init error",NULL);
-
-			lvp_mutex_unlock(&r->mutex);
-			return LVP_E_FATAL_ERROR;
-		}
-			lvp_mutex_unlock(&r->mutex);
+		if (ret < 0) {
+			lvp_error(r->log, "swr init error", NULL);
 
 			return LVP_E_FATAL_ERROR;
 		}
+
 	}
 
-	AVFrame *dstframe = av_frame_alloc();
+	AVFrame* dstframe = av_frame_alloc();
 	dstframe->format = r->target.format;
 	dstframe->channels = r->target.channels;
 	dstframe->sample_rate = r->target.sample_rate;
-	dstframe->nb_samples = frame->nb_samples * r->target.sample_rate/frame->sample_rate+256;
+	dstframe->nb_samples = frame->nb_samples * r->target.sample_rate / frame->sample_rate + 256;
 
-	int ret = av_frame_get_buffer(dstframe,0);
-	if(ret<0){
-		lvp_error(r->log,"get buffer error",NULL);
+	int ret = av_frame_get_buffer(dstframe, 0);
+	if (ret < 0) {
+		lvp_error(r->log, "get buffer error", NULL);
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
-
-	lvp_mutex_lock(&r->mutex);
-	ret = swr_convert(r->swr,dstframe->data,dstframe->nb_samples,(const uint8_t **)frame->data,frame->nb_samples);
-	lvp_mutex_unlock(&r->mutex);
-	if(ret<=0){
-		lvp_error(r->log,"swr convert error",NULL);
+	ret = swr_convert(r->swr, dstframe->data, dstframe->nb_samples, (const uint8_t * *)frame->data, frame->nb_samples);
+	if (ret <= 0) {
+		lvp_error(r->log, "swr convert error", NULL);
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
@@ -125,7 +115,6 @@ static int filter_init(struct lvp_module* module,
 	r->ctl = ctl;
 
 
-	lvp_mutex_create(&r->mutex);
 	int ret = lvp_event_control_add_listener(r->ctl,LVP_EVENT_FILTER_GOT_FRAME,handle_frame,r);
 	if(ret != LVP_OK){
 		lvp_error(r->log,"add %s listener error",LVP_EVENT_FILTER_GOT_FRAME);
