@@ -164,7 +164,7 @@ static int handle_seek(LVPEvent *ev, void *usr_data){
     LVPReaderModule *m = (LVPReaderModule*)usr_data;
 
     if(m->avctx){
-        int64_t time = *(int16_t*)ev->data;
+        int64_t time = *(int64_t*)ev->data;
         int64_t min_time = time - 1000000;
         int64_t max_time = time + 1000000;
         int ret = LVP_OK;

@@ -12,11 +12,15 @@ typedef struct lvp_avsync
     uint64_t audio_time;
     uint64_t video_time;
     uint64_t sub_time;
+	int64_t seek_time;
+	
     lvp_thread sync_thread_t;
     int sync_run;
     int has_video; 
     int has_audio;
 	int has_sub;
+	int pause;
+	int seeked;
     uint64_t ex_time;
 
     AVFrame *aframe;

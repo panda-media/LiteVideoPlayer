@@ -30,7 +30,9 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
         return LVP_E_FATAL_ERROR;
     }
 
+	lvp_mutex_lock(&cache->mutex);
     int ret = lvp_nqueue_push(cache->data,refpkt,NULL,cache_custom_pkt_free,LVP_TRUE);
+	lvp_mutex_unlock(&cache->mutex);
     if(ret == LVP_FALSE){
         return LVP_E_FATAL_ERROR;
     }
@@ -43,21 +45,26 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     if(*type != cache->media_type){
         return LVP_OK;
     }
+	lvp_mutex_lock(&cache->mutex);
     if(cache->data->size ==0 ){
        // printf("CACHE FULL\n");
+		lvp_mutex_unlock(&cache->mutex);
         return LVP_E_NO_MEM;
     }
     AVPacket *p = NULL;
 	p = (AVPacket*)lvp_nqueue_pop(cache->data);
     if(p == NULL){
 		lvp_error(cache->log, "cache queue error", NULL);
+		lvp_mutex_unlock(&cache->mutex);
         return LVP_E_FATAL_ERROR;
     }
     if(p->pts<0){
 		lvp_error(cache->log, "cache queue error", NULL);
+		lvp_mutex_unlock(&cache->mutex);
         return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);
+	lvp_mutex_unlock(&cache->mutex);
     ev->data = ref;
     av_packet_free(&p);
     return LVP_OK;
@@ -83,8 +90,9 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
         lvp_error(cache->log,"clone frame error",NULL);
         return LVP_E_FATAL_ERROR;
     }
-
+	lvp_mutex_lock(&cache->mutex);
     int ret = lvp_nqueue_push(cache->data,refframe,NULL,cache_custom_frame_free,1);
+	lvp_mutex_unlock(&cache->mutex);
     if(ret == LVP_FALSE){
         return LVP_E_FATAL_ERROR;
     }
@@ -99,7 +107,9 @@ static int handle_sub(LVPEvent* ev, void* usrdata) {
 		return LVP_E_NO_MEM;
 	}
 
+	lvp_mutex_lock(&cache->mutex);
 	int ret = lvp_nqueue_push(cache->data, sub, NULL,cache_custom_sub_free,1);
+	lvp_mutex_unlock(&cache->mutex);
 	if (ret == LVP_FALSE) {
 		return LVP_E_FATAL_ERROR;
 	}
@@ -108,12 +118,15 @@ static int handle_sub(LVPEvent* ev, void* usrdata) {
 
 static int handle_req_sub(LVPEvent* ev, void* usrdata) {
 	LVPCache* cache = (LVPCache*)usrdata;
+	lvp_mutex_lock(&cache->mutex);
 	if (cache->data->size == 0)
 	{
+		lvp_mutex_unlock(&cache->mutex);
 		return LVP_E_NO_MEM;
 	}
 	AVSubtitle* sub = NULL;
 	sub = (AVSubtitle*)lvp_nqueue_pop(cache->data);
+	lvp_mutex_unlock(&cache->mutex);
 	if (sub == NULL) {
 		return LVP_E_NO_MEM;
 	}
@@ -127,16 +140,20 @@ static int handle_req_frame(LVPEvent *ev, void *usrdata){
     if(type != cache->media_type){
         return LVP_OK;
     }
+	lvp_mutex_lock(&cache->mutex);
     if(cache->data->size == 0){
+		lvp_mutex_unlock(&cache->mutex);
         return LVP_E_NO_MEM;
     }
     AVFrame *f = NULL;
 	f = (AVFrame*)lvp_nqueue_pop(cache->data);
 	if (f == NULL)
 	{
+		lvp_mutex_unlock(&cache->mutex);
 		return LVP_E_NO_MEM;
 	}
     AVFrame *ref = av_frame_clone(f);
+	lvp_mutex_unlock(&cache->mutex);
     ev->data = ref;
     av_frame_free(&f);
     return LVP_OK;
@@ -187,7 +204,9 @@ static int init_sub_cache(LVPCache* cache) {
 
 static int handle_seek(LVPEvent *ev, void *usrdata){
     LVPCache *cache = (LVPCache*)usrdata;
+	lvp_mutex_lock(&cache->mutex);
     lvp_nqueue_clear(cache->data);
+	lvp_mutex_unlock(&cache->mutex);
     return LVP_OK;
 }
 
@@ -207,6 +226,12 @@ static int init(struct lvp_module *module,
     assert(module);
     assert(ctl);
     LVPCache *cache = (LVPCache*)module->private_data;
+	LVP_BOOL tf = lvp_mutex_create(&cache->mutex);
+	if (tf != LVP_TRUE)
+	{
+		lvp_error(NULL, "create mutex error", NULL);
+		return LVP_E_FATAL_ERROR;
+	}
     if(!strcmp(module->name,"LVP_AUDIO_PKT_CACHE")){
         cache->type = CACHE_TYPE_PKT;
         cache->media_type = AVMEDIA_TYPE_AUDIO;
@@ -280,6 +305,7 @@ static void module_close(struct lvp_module *module){
 	if (cache->log) {
 		lvp_log_free(cache->log);
 	}
+	lvp_mutex_free(&cache->mutex);
 	lvp_mem_free(cache);
 }
                             

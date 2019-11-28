@@ -109,6 +109,8 @@ int lvp_core_play(LVPCore *core);
  */
 int lvp_core_pause(LVPCore *core);
 
+int lvp_core_resume(LVPCore* core);
+
 /**
  * lvp core stop media
  * @param core lvp core
