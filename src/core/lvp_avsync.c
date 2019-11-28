@@ -37,10 +37,26 @@ static void got_frame(LVPAVSync *sync){
 
 }
 
+static int check_is_seek_frame(int64_t pts, int64_t seek_time) {
+	if (abs(seek_time/1000 - pts) < 1000)
+	{
+		return 1;
+	}
+	return 0;
+}
 
 static void sync_audio_master(LVPAVSync *sync){
     got_frame(sync);
     if(sync->aframe != NULL){
+		printf("%lld\r", sync->aframe->pts);
+		//if (sync->seeked == 1 && check_is_seek_frame(sync->aframe->pts,sync->seek_time) != 1)
+		//{
+		//	av_frame_unref(sync->aframe);
+		//	av_frame_free(&sync->aframe);
+		//	sync->aframe = NULL;
+		//	return;
+		//}
+		sync->seeked = 0;
         sync->update_audio_event->data = sync->aframe;
         int ret = lvp_event_control_send_event(sync->ctl,sync->update_audio_event);
 
@@ -72,7 +88,12 @@ static void sync_audio_master(LVPAVSync *sync){
             sync->sync_run = 0;
             return;
         }
-    }
+	}
+	else if (sync->vframe != NULL && (sync->vframe->pts - 1000) > sync->audio_time) {
+		av_frame_unref(sync->vframe);
+		av_frame_free(&sync->vframe);
+		sync->vframe = NULL;
+	}
 	if (sync->sub != NULL && sync->sub->pts <= sync->audio_time)
 	{
 		sync->update_sub_event->data = sync->sub;
@@ -88,26 +109,45 @@ static void sync_audio_master(LVPAVSync *sync){
 			return;
 		}
 	}
+	else if (sync->sub != NULL && (sync->sub->pts - 1000) > sync->audio_time) {
+			avsubtitle_free(sync->sub);
+			lvp_mem_free(sync->sub);
+			sync->sub = NULL;
+	}
 }
 
 //when media no audio then we use extra time to sync video 
 static void sync_video_master(LVPAVSync *sync){
     got_frame(sync);
     if(sync->vframe!= NULL){
-        if(sync->vframe->pts<0 || sync->vframe->pts<= sync->ex_time){
-            sync->update_video_event->data = sync->vframe;
-            int ret = lvp_event_control_send_event(sync->ctl,sync->update_video_event);
-            if(ret == LVP_OK){
-                av_frame_unref(sync->vframe);
-                av_frame_free(&sync->vframe);
-                sync->vframe = NULL;
-            }else if(ret != LVP_E_NO_MEM){
-                lvp_error(sync->log,"video render return error %d",ret);
-                // exit loop
-                sync->sync_run = 0;
-                return;
-            }
-        }
+		//if (sync->seeked == 1 && check_is_seek_frame(sync->vframe->pts,sync->seek_time) != 1)
+		//{
+		//	av_frame_unref(sync->vframe);
+		//	av_frame_free(&sync->vframe);
+		//	sync->vframe = NULL;
+		//	return;
+		//}
+		sync->seeked = 0;
+		if (sync->vframe->pts < 0 || sync->vframe->pts <= sync->ex_time) {
+			sync->update_video_event->data = sync->vframe;
+			int ret = lvp_event_control_send_event(sync->ctl, sync->update_video_event);
+			if (ret == LVP_OK) {
+				av_frame_unref(sync->vframe);
+				av_frame_free(&sync->vframe);
+				sync->vframe = NULL;
+			}
+			else if (ret != LVP_E_NO_MEM) {
+				lvp_error(sync->log, "video render return error %d", ret);
+				// exit loop
+				sync->sync_run = 0;
+				return;
+			}
+		}
+		else if ((sync->vframe->pts - 1000) > sync->ex_time) {
+				av_frame_unref(sync->vframe);
+				av_frame_free(&sync->vframe);
+				sync->vframe = NULL;
+		}
     }
 	if (sync->sub != NULL && sync->sub->pts <= sync->ex_time)
 	{
@@ -124,6 +164,11 @@ static void sync_video_master(LVPAVSync *sync){
 			return;
 		}
 	}
+	else if (sync->sub != NULL && (sync->sub->pts - 1000) > sync->audio_time) {
+		avsubtitle_free(sync->sub);
+		lvp_mem_free(sync->sub);
+		sync->sub = NULL;
+	}
 }
 
 static void *sync_thread(void *data){
@@ -138,6 +183,11 @@ static void *sync_thread(void *data){
     uint64_t time = av_gettime()/1000;
     while (sync->sync_run == 1)
     {
+		if (sync->pause == 1)
+		{
+			lvp_sleep(30);
+			continue;
+		}
 		int synctype = sync->has_audio  == 1? AVMEDIA_TYPE_AUDIO:AVMEDIA_TYPE_VIDEO;
         if(synctype == AVMEDIA_TYPE_AUDIO){
             sync_audio_master(sync);
@@ -166,6 +216,33 @@ static int handle_select_stream(LVPEvent *ev, void *usrdata){
     return LVP_OK;
 }
 
+static int handle_pause(LVPEvent* ev, void* usrdata) {
+	assert(ev);
+	assert(usrdata);
+    LVPAVSync *sync = (LVPAVSync*)usrdata;
+	sync->pause = 1;
+	return LVP_OK;
+}
+
+static int handle_resume(LVPEvent* ev, void* usrdata) {
+	assert(ev);
+	assert(usrdata);
+	LVPAVSync* sync = (LVPAVSync*)usrdata;
+	sync->pause = 0;
+	return LVP_OK;
+}
+
+static int handle_seek(LVPEvent* ev, void* usrdata) {
+	assert(ev);
+	assert(usrdata);
+	LVPAVSync* sync = (LVPAVSync*)usrdata;
+	int64_t seek_time = *(int64_t*)ev->data;
+	sync->seeked = 1; ///< not use
+	sync->seek_time = seek_time; ///< not use
+	sync->ex_time = seek_time / 1000;
+	return LVP_OK;
+}
+
 static int module_init(struct lvp_module *module, 
                                     LVPMap *options,
                                     LVPEventControl *ctl,
@@ -181,6 +258,21 @@ static int module_init(struct lvp_module *module,
 
     int ret = lvp_event_control_add_listener(ctl,LVP_EVENT_SELECT_STREAM,handle_select_stream,sync);
 
+    if(ret!=LVP_OK){
+        return LVP_E_FATAL_ERROR;
+    }
+
+	ret = lvp_event_control_add_listener(ctl, LVP_EVENT_PAUSE, handle_pause, sync);
+    if(ret!=LVP_OK){
+        return LVP_E_FATAL_ERROR;
+    }
+
+	ret = lvp_event_control_add_listener(ctl, LVP_EVENT_RESUME, handle_resume, sync);
+    if(ret!=LVP_OK){
+        return LVP_E_FATAL_ERROR;
+    }
+
+	ret = lvp_event_control_add_listener(ctl, LVP_EVENT_SEEK, handle_seek, sync);
     if(ret!=LVP_OK){
         return LVP_E_FATAL_ERROR;
     }

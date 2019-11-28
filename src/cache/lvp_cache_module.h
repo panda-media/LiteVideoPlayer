@@ -15,6 +15,7 @@ typedef struct lvp_cache_module
     LVPLog *log;
     LVPEventControl *ctl;
 
+	lvp_mutex mutex;
     LVPNQueue *data;
     AVStream *handle_stream;
     int type;

@@ -169,7 +169,7 @@ int lvp_core_stop(LVPCore *core){
 int lvp_core_seek(LVPCore *core,double pts){
     assert(core);
     //make pts is micro second
-    int core_pts = pts*1000*1000;
+    int64_t core_pts = pts*1000*1000;
     LVPEvent *ev = lvp_event_alloc(&core_pts,LVP_EVENT_SEEK,LVP_TRUE);
     int ret = lvp_event_control_send_event(core->event_control,ev);
     lvp_event_free(ev);
