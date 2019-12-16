@@ -1,10 +1,11 @@
 # LVP(Lite video player)
 
 ## About
-LVP 是一个基于[FFmpeg]("http://ffmpeg.org/")的播放器框架，
+LVP 是一个基于[FFmpeg]("http://ffmpeg.org/")的播放器框架
+
 
 ## Feture
-1. 可移植性, LVP目前支持Windows，Linux，MacOS,理论上说LVP支持任何可以编译过FFmpeg的平台 
+1. 跨平台， LVP目前支持Windows，Linux，MacOS,理论上说LVP支持任何可以编译过FFmpeg的平台 
 2. 低开销，LVP在支持[硬件加速](./doc/hwaccel.MD)的平台上开销极低，可以和VLC媲美。
 3. 易定制，LVP使用[模块](./doc/module.MD)设计,其中packet filter 和 frame filter可以很方便的拿到解码前后的数据
 
@@ -39,7 +40,7 @@ lvp_core_play(core);
 
 ```
 
-# 构架
+# Data flow
 ```c
  -------               --------             -------
 |       |    reader   |  pkt   |           |  pkt  |
@@ -56,3 +57,6 @@ lvp_core_play(core);
 |        |          |        |           |        |
  --------             -------            --------
 ```
+
+## License
+MIT license.
