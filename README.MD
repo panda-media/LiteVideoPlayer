@@ -5,8 +5,8 @@ LVP 是一个基于[FFmpeg]("http://ffmpeg.org/")的播放器框架，
 
 ## Feture
 1. 可移植性, LVP目前支持Windows，Linux，MacOS,理论上说LVP支持任何可以编译过FFmpeg的平台 
-2. 低开销，LVP在至此硬件加速的平台上开销极低，可以和VLC媲美。
-3. 易定制，LVP使用模块设计其中packet filter 和 frame filter可以很方便的拿到解码前后的数据
+2. 低开销，LVP在支持[硬件加速](./doc/hwaccel.MD)的平台上开销极低，可以和VLC媲美。
+3. 易定制，LVP使用[模块](./doc/module.MD)设计,其中packet filter 和 frame filter可以很方便的拿到解码前后的数据
 
 ## Render
 Render 可能是您最需要关心的一个[模块](./doc/module.MD),播放器的声音播放和画面渲染都在此模块完成
@@ -23,6 +23,7 @@ LVP 还为[Qt](https://qt.io)、[Unity3D](https://unity3d.com)、[Electron](http
 #mkdir build
 #cd build
 #cmake ..
+#make
 ```
 
 ## Use
@@ -41,16 +42,17 @@ lvp_core_play(core);
 # 构架
 ```c
  -------               --------             -------
-|       |             |  pkt   |           |  pkt  |
+|       |    reader   |  pkt   |           |  pkt  |
 | input |------------>| filter |---------->| cache |
 |       |             |        |           |       |
  -------               --------             -------
                                                |
+                                               |decoder
                                                |
                                                v
-      --------          --------            --------
-     |        |        |        |          | frame  |   
-     | render |<-------| frame  |<---------| filter |
-     |        |        |  cache |          |        |
-      --------           -------            --------
+ --------            --------             --------
+|        |          | frame  |           | frame  |   
+| render |<---------| cache  |<----------| filter |
+|        |          |        |           |        |
+ --------             -------            --------
 ```
