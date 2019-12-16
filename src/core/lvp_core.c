@@ -175,3 +175,7 @@ int lvp_core_seek(LVPCore *core,double pts){
     lvp_event_free(ev);
     return ret;
 }
+
+int lvp_core_get_hw_info(char **infos, int num_info){
+    
+}

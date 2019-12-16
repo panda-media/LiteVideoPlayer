@@ -126,4 +126,6 @@ int lvp_core_stop(LVPCore *core);
  */
 int lvp_core_seek(LVPCore *core,double pts);
 
+int lvp_core_get_hw_info(int codec_id);
+
 #endif

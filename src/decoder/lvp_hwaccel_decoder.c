@@ -62,3 +62,8 @@ int lvp_set_up_hwaccel_decoder(LVPDecoder* decoder)
 
 	return LVP_OK;;
 }
+
+//todo
+int lvp_get_hwaccel_info(char ***infos, int info_num){
+
+}

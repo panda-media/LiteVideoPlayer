@@ -200,3 +200,13 @@ void* lvp_map_get(LVPMap *map, const char *key){
     return NULL;
     
 }
+
+const LVPMapEntry *lvp_map_iterate(LVPMap *map, void **op){
+    assert(map);
+    assert(op);
+    for (size_t i = 0; i < map->size; i++)
+    {
+        LVPMapEntry *
+    }
+    
+}

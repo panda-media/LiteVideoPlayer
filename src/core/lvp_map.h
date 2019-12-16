@@ -31,4 +31,6 @@ int lvp_map_del(LVPMap *map, const char *key);
 
 void* lvp_map_get(LVPMap *map, const char *key);
 
+const LVPMapEntry *lvp_map_iterate(LVPMap *map, void **op);
+
 #endif

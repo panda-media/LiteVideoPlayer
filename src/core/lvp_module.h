@@ -53,7 +53,7 @@ int lvp_module_init(LVPModule *module,LVPMap *options, LVPEventControl *ctl, LVP
  * eg.
  * void *opaque = NULL;
  * LVPModuel *my_module = NULL;
- * for(LVPModule *m = lvp_module_iterate(&opaque);m!=NULL;){
+ * for(LVPModule *m = NULL; (m = lvp_module_iterate(&op)) != NULL; ){
  *      if(!strcmp(m->name,"MY_MODULE_NAME")){
  *          my_module = lvp_module_create_module(m);
  *      } 
