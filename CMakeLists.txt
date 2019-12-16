@@ -7,12 +7,62 @@ cmake_minimum_required(VERSION 3.0)
 
 project(lvp)
 
-include_directories("./deps/ffmpeg/windows/include")
-link_directories("./deps/ffmpeg/windows/lib")
-add_subdirectory("./src/test/lvp_core_test")
-#add_subdirectory("./src/test/lvp_queue_test")
 
-add_executable( lvp
-                ./src/core/lvp.c
-                ./src/core/lvp_core.c
+include_directories("./deps/ffmpeg/linux/include/")
+link_directories("./deps/ffmpeg/linux/lib/")
+
+include_directories("./deps/SDL2/windows/")
+link_directories("./deps/SDL2/windows/lib/x64/")
+
+add_library(lvp STATIC 
+            ./src/core/lvp_array.c
+            ./src/core/lvp_avsync.c
+            ./src/core/lvp_condition.c
+            ./src/core/lvp_core.c
+            ./src/core/lvp_event.c
+            ./src/core/lvp_list.c
+            ./src/core/lvp_log.c
+            ./src/core/lvp_map.c
+            ./src/core/lvp_module.c
+            ./src/core/lvp_mutex.c
+            ./src/core/lvp_nqueue.c
+            ./src/core/lvp_queue.c
+            ./src/core/lvp_semaphore.c
+            ./src/core/lvp_stack.c
+            ./src/core/lvp_str.c
+            ./src/core/lvp_thread.c
+
+            ./src/decoder/lvp_decoder.c
+            ./src/decoder/lvp_hwaccel_decoder.c
+
+            ./src/filter/lvp_audio_resample.c
+            ./src/filter/lvp_frame_filter.c
+            ./src/filter/lvp_pkt_filter.c
+
+            ./src/reader/lvp_reader_module.c
+
+            ./src/render/lvp_audio_render.c
+            ./src/render/lvp_video_render.c
+
+            ./src/cache/lvp_cache_module.c
+)
+
+add_executable( LiteVideoPlayer
+        ./src/core/lvp.c
+)
+
+target_link_libraries(
+    LiteVideoPlayer
+    lvp
+
+    avformat
+    avcodec
+    swresample
+    swscale
+    avutil
+    SDL2
+    SDL2main
+    m
+    pthread
+    z
 )
