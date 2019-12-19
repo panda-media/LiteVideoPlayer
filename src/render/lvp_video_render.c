@@ -54,7 +54,8 @@ int handle_update(LVPEvent *ev,void *usrdata){
 
 
 int handle_sub(LVPEvent* ev, void* usrdata) {
-	LVPVideoRender* r = (LVPVideoRender*)usrdata;
+	//LVPVideoRender* r = (LVPVideoRender*)usrdata;
+    
 	AVSubtitle* sub = (AVSubtitle*)ev->data;
 	printf("%s\n", sub->rects[0]->ass);
 	return LVP_OK;

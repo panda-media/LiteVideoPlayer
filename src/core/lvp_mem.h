@@ -40,4 +40,8 @@ static inline void lvp_mem_free(void *data){
     av_free(data);
 }
 
+static inline void* lvp_mem_realloc(void *data,size_t size){
+    return av_realloc(data,size);
+}
+
 #endif

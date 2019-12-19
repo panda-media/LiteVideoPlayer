@@ -7,6 +7,7 @@
 #include "lvp_events.h"
 
 
+
 /**
  *lvp custom lvp_mem_free use to some context lvp_mem_free self
  *@param data lvp_mem_free object 
@@ -25,6 +26,7 @@ typedef struct lvp_log LVPLog;
 typedef struct lvp_map LVPMap;
 typedef struct lvp_event_control LVPEventControl;  
 typedef struct lvp_list LVPList;
+typedef struct lvp_module LVPModule;
 
 #ifdef LVP_WIN32
 typedef CRITICAL_SECTION lvp_mutex;
@@ -48,10 +50,11 @@ typedef pthread_mutex_t lvp_mutex;
 #include "lvp_event.h"
 #include "lvp_semaphore.h"
 #include "lvp_module.h"
+#include "lvp_cpp.h"
 
 typedef struct lvp_core{
-    LVPList *modules;
-    LVPMap *options;
+    LVPList *modules; /***< all lvp module*/
+    LVPMap *options; /***< user options*/
     LVPEventControl *event_control;
     LVPLog *log;
 
@@ -59,6 +62,10 @@ typedef struct lvp_core{
     char *option_str;
     char *input_str;
 }LVPCore;
+
+typedef int (*dynamic_module_init)(LVPModule *module, LVPMap *options, LVPEventControl *ctl,LVPLog *log) ;
+
+typedef void (*dynamic_module_close)(LVPModule *module) ;
 
 /**
  * lvp core alloc
@@ -109,6 +116,10 @@ int lvp_core_play(LVPCore *core);
  */
 int lvp_core_pause(LVPCore *core);
 
+/**
+ *  lvp core resume media
+ *  @param core lvp core
+ */
 int lvp_core_resume(LVPCore* core);
 
 /**
@@ -125,5 +136,18 @@ int lvp_core_stop(LVPCore *core);
  * @return LVP_OK for success
  */
 int lvp_core_seek(LVPCore *core,double pts);
+
+
+/**
+ * lvp core register dynamic module
+ * 
+ */
+int lvp_core_register_dynamic_module(dynamic_module_init minit,dynamic_module_close mclose,
+                                    const char *name, int type,int private_data_size);
+
+/**
+ * lvp core unload dynamic module,
+ */
+void lvp_core_unload_dynamic_module();
 
 #endif

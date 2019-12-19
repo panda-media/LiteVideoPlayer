@@ -13,7 +13,7 @@ typedef enum lvp_module_type{
 }LVPModuleType;
 
 
-typedef struct lvp_module{
+struct lvp_module{
     uint64_t        version;
     char            *name;
     LVPModuleType   type;
@@ -26,7 +26,8 @@ typedef struct lvp_module{
                                     LVPLog *log);
     void            (*module_close)(struct lvp_module *module);
 
-}LVPModule;
+};
+
 
 /**
  * get module with type and module name
@@ -53,7 +54,7 @@ int lvp_module_init(LVPModule *module,LVPMap *options, LVPEventControl *ctl, LVP
  * eg.
  * void *opaque = NULL;
  * LVPModuel *my_module = NULL;
- * for(LVPModule *m = lvp_module_iterate(&opaque);m!=NULL;){
+ * for(;(LVPModule *m = lvp_module_iterate(&opaque))!=NULL;){
  *      if(!strcmp(m->name,"MY_MODULE_NAME")){
  *          my_module = lvp_module_create_module(m);
  *      } 
@@ -70,6 +71,16 @@ LVPModule* lvp_module_iterate(void **opaque);
 LVPModule* lvp_module_create_module(LVPModule *m);
 
 void lvp_module_close(LVPModule *m);
+
+/**
+ * add dynamic module
+ */
+int lvp_module_add(LVPModule *m);
+
+/**
+ * free dynamic module
+ */
+void lvp_module_free_dynamic_module();
 
 
 #endif

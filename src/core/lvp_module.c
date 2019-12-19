@@ -2,13 +2,11 @@
 #include "lvp_modules.h"
 
 LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type){
-    size_t size = sizeof(LVPModules)/sizeof(LVPModules[0]);
     LVPModule *m = NULL;
-    for (size_t i = 0; i < size; i++)
-    {
-        m = LVPModules[i];
+    void *op = NULL;
+    for ( ; (m = lvp_module_iterate(&op))!= NULL;){
         if(type == m->type){
-            if(module_name&&!strcmp(module_name,m->name)){
+            if(module_name && !strcmp(module_name, m->name)){
                 break;
             }else{
                 if(module_name){
@@ -17,8 +15,8 @@ LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type){
                 }else{
                     break;
                 }
-
             }
+            break;
         }
         m = NULL;
     }
@@ -45,7 +43,7 @@ int lvp_module_init(LVPModule *module,LVPMap *options, LVPEventControl *ctl, LVP
     else
         lvp_debug(NULL,"module %s init return %d",module->name,ret);
 
-    return LVP_OK;
+    return ret;
 }
 
 
@@ -55,6 +53,9 @@ LVPModule* lvp_module_iterate(void **opaque){
     LVPModule *m = NULL;
     if(i<=size){
         m = LVPModules[i];
+    }
+    if(DynamicModuleNum >0 && i-size < DynamicModuleNum){
+        m = DynamicModules[i-size];
     }
     if(m){
         *opaque = (void*)(i+1);
@@ -70,4 +71,22 @@ LVPModule* lvp_module_create_module(LVPModule *m){
 
 void lvp_module_close(LVPModule *m){
     m->module_close(m);
+}
+
+int lvp_module_add(LVPModule *m){
+    DynamicModuleNum++;
+    if(DynamicModules == NULL){
+        DynamicModules = lvp_mem_mallocz(sizeof(LVPModule));
+        DynamicModules[0]  = m;
+        return LVP_OK;
+    }
+    DynamicModules = lvp_mem_realloc(DynamicModules,DynamicModuleNum*sizeof(LVPModule));
+    DynamicModules[DynamicModuleNum-1] = m;
+    return LVP_OK;
+}
+
+void lvp_module_free_dynamic_module(){
+    DynamicModuleNum = 0;
+    lvp_mem_free(DynamicModules);
+    DynamicModules = NULL;
 }

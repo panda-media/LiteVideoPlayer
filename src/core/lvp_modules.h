@@ -38,4 +38,10 @@ static LVPModule *LVPModules[]={
 	&lvp_avsync_module,
 	&lvp_audio_resample,
 };
+
+static LVPModule **DynamicModules = NULL;
+
+static int DynamicModuleNum = 0;
+
+
 #endif

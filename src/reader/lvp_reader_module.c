@@ -40,7 +40,6 @@ static void* reader_thread(void *data){
         m->vstream = fmt->streams[best_index];
     best_index = -1;
     best_index = av_find_best_stream(fmt,AVMEDIA_TYPE_SUBTITLE,-1,-1,NULL,0);
-//	best_index = 30;
     if(best_index>=0)
         m->sub_stream = fmt->streams[best_index];
     
@@ -261,6 +260,12 @@ static int module_init(struct lvp_module *module,
 static void module_close(struct lvp_module *module){
     LVPReaderModule *m = (LVPReaderModule*)module->private_data;
     m->is_interrupt = LVP_TRUE;
+
+    lvp_event_control_remove_listener(m->ctl,LVP_EVENT_PLAY,handle_play,m);
+    lvp_event_control_remove_listener(m->ctl,LVP_EVENT_SET_URL,handle_set_url,m);
+    lvp_event_control_remove_listener(m->ctl,LVP_EVENT_SEEK,handle_seek,m);
+    lvp_event_control_remove_listener(m->ctl,LVP_EVENT_STOP,handle_stop,m);
+    lvp_event_control_remove_listener(m->ctl,LVP_EVENT_CHANGE_STREAM,handle_change_stream,m);
 
     if(m->reader_thread!=0){
 		m->is_reader_thread_run = 0;

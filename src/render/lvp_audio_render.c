@@ -34,7 +34,6 @@ static void audio_call(void *usrdata,uint8_t *stream, int len){
 	
 
     SDL_MixAudioFormat(stream,mixdata,r->audio_spec->format,len,SDL_MIX_MAXVOLUME);
-	//SDL_MixAudio(stream, mixdata, len, SDL_MIX_MAXVOLUME);
     free(mixdata);
 }
 

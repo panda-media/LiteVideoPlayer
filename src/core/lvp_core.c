@@ -86,8 +86,30 @@ static int init_basic_module(LVPCore *core,const char *default_module_name,
     return LVP_OK;
 }
 
+
 static int init_core_modules(LVPCore *core){
     assert(core);
+
+    void *op = NULL;
+    for ( LVPModule *m = NULL ; (m = lvp_module_iterate(&op)) != NULL; )
+    {
+        if (m->type == LVP_MODULE_CORE){
+            LVPModule *core_module = lvp_module_create_module(m);
+            if(core_module == NULL){
+                lvp_error(core->log,"create module: %s error no mem",m->name);
+                return LVP_E_NO_MEM;
+            }
+            int ret = lvp_module_init(core_module,core->options,core->event_control,core->log);
+            if(ret != LVP_OK){
+                lvp_error(core->log,"init module: %s error return %d",m->name,ret);
+                return ret;
+            }
+            lvp_list_add(core->modules,core_module,NULL,lvp_module_custom_free,1);
+        }
+    }
+
+    lvp_debug(core->log,"init core module done",NULL);
+    
 
     //reader
     int ret = init_basic_module(core,"LVP_READER_MODULE","reader",LVP_MODULE_CORE|LVP_MODULE_READER);
@@ -103,31 +125,36 @@ static int init_core_modules(LVPCore *core){
 
     ret = init_basic_module(core,"LVP_FRAME_FILTER","frame_filter",LVP_MODULE_CORE|LVP_MODULE_FRAME_FILTER);
 
-    //pkt cache
-    ret = init_basic_module(core,"LVP_AUDIO_PKT_CACHE",NULL,LVP_MODULE_CORE);
+    if (ret != LVP_OK){
+        goto error;
+    }
 
-    //pkt cache
-    ret = init_basic_module(core,"LVP_VIDEO_PKT_CACHE",NULL,LVP_MODULE_CORE);
-
-    ret = init_basic_module(core,"LVP_SUB_PKT_CACHE",NULL,LVP_MODULE_CORE);
-
-    ret = init_basic_module(core,"LVP_VIDEO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
-
-    ret = init_basic_module(core,"LVP_AUDIO_FRAME_CACHE",NULL,LVP_MODULE_CORE);
-
-    ret = init_basic_module(core,"LVP_SUB_FRAME_CACHE",NULL,LVP_MODULE_CORE);
 
     ret = init_basic_module(core,"LVP_AUDIO_DECODER","audio_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
+    if (ret != LVP_OK){
+        goto error;
+    }
 
     ret = init_basic_module(core,"LVP_VIDEO_DECODER","video_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
+    if(ret != LVP_OK){
+        goto error;
+    }
 
     ret = init_basic_module(core,"LVP_SUB_DECODER","sub_decoder",LVP_MODULE_CORE|LVP_MODULE_DECODER);
+    if(ret != LVP_OK){
+        goto error;
+    }
 
     ret = init_basic_module(core,"LVP_AUDIO_RENDER","audio_render",LVP_MODULE_CORE|LVP_MODULE_RENDER);
+    if(ret != LVP_OK){
+        goto error;
+    }
 
     ret = init_basic_module(core,"LVP_VIDEO_RENDER","video_render",LVP_MODULE_CORE|LVP_MODULE_RENDER);
+    if(ret != LVP_OK){
+        goto error;
+    }
 
-    ret = init_basic_module(core,"LVP_AVSYNC_MODULE","video_render",LVP_MODULE_CORE);
 
     return LVP_OK;
 
@@ -139,6 +166,7 @@ int lvp_core_play(LVPCore *core){
     assert(core);
     int ret = init_core_modules(core);
     if(ret!=LVP_OK){
+        lvp_error(core->log,"init core modules error",NULL);
         return ret;
     }
     LVPSENDEVENT(core->event_control,LVP_EVENT_SET_URL,core->input_str);
@@ -174,4 +202,20 @@ int lvp_core_seek(LVPCore *core,double pts){
     int ret = lvp_event_control_send_event(core->event_control,ev);
     lvp_event_free(ev);
     return ret;
+}
+
+int lvp_core_register_dynamic_module(dynamic_module_init minit,dynamic_module_close mclose,
+                                    const char *name, int type,int private_data_size){
+    LVPModule *m = (LVPModule*)lvp_mem_mallocz(sizeof(LVPModule));
+    m->module_init = minit;
+    m->module_close = mclose;
+    m->name = (char*)name;
+    m->type = type;
+    m->private_data_size = private_data_size;
+    return lvp_module_add(m);
+}
+
+
+void lvp_core_unload_dynamic_module(){
+    lvp_module_free_dynamic_module();
 }

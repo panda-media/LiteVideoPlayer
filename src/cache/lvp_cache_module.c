@@ -22,7 +22,6 @@ static int handle_pkt(LVPEvent *ev, void *usr_data){
     if(cache->data->size >= cache->max_size){
         return LVP_E_NO_MEM;
     }
-	//printf("cache type:%d size:%ld\n", cache->media_type, size);
 
     AVPacket *refpkt =  av_packet_clone(ev->data);
     if(refpkt == NULL){

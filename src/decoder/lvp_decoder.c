@@ -213,7 +213,7 @@ static void* sub_decoder_thread(void* data) {
 			ev->data = &d->codec_type;
 			ret = lvp_event_control_send_event(d->ctl, ev);
 			if (ret == LVP_E_NO_MEM) {
-				//×ÖÄ»²»ĞèÒªÌ«¸ßµÄË¢ĞÂÂÊ
+				//å­—å¹•ä¸éœ€è¦å¤ªé«˜çš„åˆ·æ–°ç‡
 				lvp_sleep(500);
 				continue;
 			}
