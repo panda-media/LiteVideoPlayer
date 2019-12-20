@@ -79,6 +79,11 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
 		return LVP_OK;
 	}
 
+    //this frame no audio sample we don't need cache it
+    if(type == AVMEDIA_TYPE_AUDIO && f->nb_samples == 0){
+        printf("NCACHE\n");
+        return LVP_OK;
+    }
 
     if(cache->data->size >= cache->max_size){
         return LVP_E_NO_MEM;

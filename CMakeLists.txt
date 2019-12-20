@@ -14,7 +14,7 @@ link_directories("./deps/ffmpeg/linux/lib/")
 include_directories("./deps/SDL2/windows/")
 link_directories("./deps/SDL2/windows/lib/x64/")
 
-include_directories("./deps/SoundTouch/")
+include_directories("./deps/soundtouch/")
 
 add_library(lvp STATIC 
             ./src/core/lvp_cpp.cc
@@ -41,6 +41,7 @@ add_library(lvp STATIC
             ./src/filter/lvp_audio_resample.c
             ./src/filter/lvp_frame_filter.c
             ./src/filter/lvp_pkt_filter.c
+            ./src/filter/lvp_audio_tempo_filter.c
 
             ./src/reader/lvp_reader_module.c
 

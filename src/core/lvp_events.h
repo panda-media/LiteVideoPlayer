@@ -15,6 +15,7 @@
 #define LVP_EVENT_CHANGE_STREAM "LVP_EVENT_CHANGE_STREAM"///< user change stream
                                                         /// if media has multiple stream
                                                         ///most media has multiple audio stream and multiple sub
+#define LVP_EVENT_CHANGE_TEMPO  "LVP_EVENT_CHANGE_TEMPO"
 
 #define LVP_EVENT_OPEN_ERROR    "LVP_EVENT_OPEN_ERROR"
 #define LVP_EVENT_OPEN_DONE     "LVP_EVENT_OPEN_DONE"

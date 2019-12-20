@@ -92,7 +92,7 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
 
     size_t one_frame_size = av_samples_get_buffer_size(frame->linesize,frame->channels,frame->nb_samples,frame->format,0);
     if(r->buf == NULL){
-        r->buf_max = one_frame_size * 3;
+        r->buf_max = one_frame_size * 6;
         r->buf =(uint8_t*)lvp_mem_mallocz(r->buf_max);
         int ret = init_sdl_audio(r,frame);
         SDL_Init(SDL_INIT_AUDIO);

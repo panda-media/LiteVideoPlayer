@@ -16,29 +16,56 @@ int lvp_cpp_test(){
 extern "C"
 void *lvp_create_soundtouch(){
     SoundTouch *st = new(SoundTouch);
+    st->setSetting(SETTING_USE_QUICKSEEK,1);
+    st->setSetting(SETTING_USE_AA_FILTER,1);
     return st;
 }
 
-int lvp_soundtouch_set_tempo(void *st, int tempo){
+extern "C"
+int lvp_soundtouch_set_tempo(void *st, double tempo){
     SoundTouch *soundTouch = (SoundTouch*)st;
     soundTouch->setTempo(tempo);
     return LVP_OK;
 }
 
+extern "C"
 int lvp_soundtouch_set_channels(void *st, int channels){
     SoundTouch *soundTouch = (SoundTouch*)st;
     soundTouch->setChannels(channels);
     return LVP_OK;
 }
 
+extern "C"
 int lvp_soundtouch_set_rate(void *st, double rate){
     SoundTouch *soundTouch = (SoundTouch*)st;
     soundTouch->setRate(rate);
     return LVP_OK;
 }
 
+extern "C"
 int lvp_soundtouch_change_tempo(void *st, int tempo){
     SoundTouch *soundTouch = (SoundTouch*)st;
     soundTouch->setTempoChange(tempo);
     return LVP_OK;
+}
+
+extern "C"
+int lvp_soundtouch_set_sample_rate(void *st, uint rate){
+    SoundTouch *soundTouch = (SoundTouch*)st;
+    soundTouch->setSampleRate(rate);
+    return LVP_OK;
+}
+
+extern "C"
+int lvp_soundtouch_send_sample(void *st, void *data,int nbsamples){
+    SoundTouch *soundTouch = (SoundTouch*)st;
+    soundTouch->putSamples((SAMPLETYPE*)data,nbsamples);
+    return LVP_OK;
+}
+
+extern "C"
+int lvp_soundtouch_recive_sample(void *st,void *data,uint32_t maxsample){
+    SoundTouch *soundTouch = (SoundTouch*)st;
+    int ret = soundTouch->receiveSamples((SAMPLETYPE*)data,maxsample);
+    return ret;
 }
