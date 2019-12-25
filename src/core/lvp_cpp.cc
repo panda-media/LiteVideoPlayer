@@ -69,3 +69,10 @@ int lvp_soundtouch_recive_sample(void *st,void *data,uint32_t maxsample){
     int ret = soundTouch->receiveSamples((SAMPLETYPE*)data,maxsample);
     return ret;
 }
+
+extern "C"
+void  lvp_soundtouch_destroy(void *st){
+    SoundTouch *soundTouch = (SoundTouch*)st;
+    soundTouch->clear();
+    delete soundTouch;
+}

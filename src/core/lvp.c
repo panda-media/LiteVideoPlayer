@@ -3,14 +3,14 @@
 
 int main() {
 	int i = 0;
-	do {
+	//do {
 		LVPCore* core = lvp_core_alloc();
-		lvp_core_set_url(core, "d:/tw.mkv");
+		lvp_core_set_url(core, "/home/fgodt/test.mp4");
 		lvp_core_play(core);
 		lvp_sleep(100000);
 		lvp_core_free(core);
 		i++;
-	} while (i < 100);
+	//} while (i < 1);
 	return 0;
 }
 

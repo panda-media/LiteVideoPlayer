@@ -20,6 +20,7 @@ void lvp_nqueue_free(LVPNQueue *q){
         lvp_mem_free(q->datas[i]);
     }
 
+	lvp_mem_free(q->datas);
     lvp_mem_free(q);
     
 }

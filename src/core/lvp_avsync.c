@@ -287,11 +287,17 @@ static void module_close(struct lvp_module *module){
 	if (sync->req_event) {
 		lvp_event_free(sync->req_event);
 	}
+	if(sync->req_sub_event){
+		lvp_event_free(sync->req_sub_event);
+	}
 	if (sync->update_audio_event) {
 		lvp_event_free(sync->update_audio_event);
 	}
 	if (sync->update_video_event) {
 		lvp_event_free(sync->update_video_event);
+	}
+	if (sync->update_sub_event){
+		lvp_event_free(sync->update_sub_event);
 	}
 	if (sync->aframe) {
 		av_frame_free(&sync->aframe);

@@ -1,7 +1,6 @@
 #include "../core/lvp_core.h"
 #include "../core/lvp.h"
 #include <libavutil/frame.h>
-#include <stwapper.h>
 
 typedef struct lvp_audio_tempo_filter {
 //    void *soundTouch;
@@ -16,7 +15,6 @@ typedef struct lvp_audio_tempo_filter {
 
 
 static int handle_frame(LVPEvent *ev, void *usrdata){
-	//return LVP_OK;
     AVFrame *frame = (AVFrame*)ev->data;
     LVPAudioTempoFilter *f = (LVPAudioTempoFilter*)usrdata;
     //video data
@@ -24,15 +22,14 @@ static int handle_frame(LVPEvent *ev, void *usrdata){
         return LVP_OK;
     }
     //not change
-    if (f->tempo == 0){
+    if (f->tempo == 1.0){
         return LVP_OK;
     }
     if(f->sound_touch == NULL){
 		f->sound_touch = lvp_create_soundtouch();
 		lvp_soundtouch_set_channels(f->sound_touch,frame->channels);
         lvp_soundtouch_set_sample_rate(f->sound_touch,frame->sample_rate);
-        //lvp_soundtouch_set_tempo(f->sound_touch,f->tempo);
-		lvp_soundtouch_change_tempo(f->sound_touch, 50);
+		lvp_soundtouch_change_tempo(f->sound_touch, (int)((f->tempo-1.0)*100));
         int size = av_get_bytes_per_sample(frame->format)*frame->channels;
         //make max size big enough
         f->max_samples = frame->nb_samples *10;
@@ -49,13 +46,11 @@ static int handle_frame(LVPEvent *ev, void *usrdata){
     AVFrame *tempo_frame = av_frame_alloc();
     int read_count = 0;
     read_count = lvp_soundtouch_recive_sample(f->sound_touch,f->buf,frame->nb_samples);
-//	read_count = sound_touch_receiveSamples(f->buf, frame->nb_samples, f->soundTouch);
     tempo_frame->nb_samples += read_count;
 	int index = 0;
     while(read_count>0){
         index  = tempo_frame->nb_samples*size;
         read_count = lvp_soundtouch_recive_sample(f->sound_touch,f->buf+index,frame->nb_samples);
-	//	read_count = sound_touch_receiveSamples(f->buf+index, frame->nb_samples, f->soundTouch);
         tempo_frame->nb_samples += read_count;
     }
     if (tempo_frame->nb_samples==f->max_samples){
@@ -122,7 +117,15 @@ static int filter_init(LVPModule *m,
 static void filter_close(LVPModule *m){
     LVPAudioTempoFilter *f = (LVPAudioTempoFilter*)m->private_data;
     if(f->sound_touch){
+        lvp_soundtouch_destroy(f->sound_touch);
     }
+    if(f->log){
+        lvp_log_free(f->log);
+    }
+    if(f->buf){
+        lvp_mem_free(f->buf);
+    }
+    lvp_mem_free(f);
     return ;
 }
 

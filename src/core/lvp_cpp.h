@@ -18,4 +18,6 @@ int lvp_soundtouch_send_sample(void *st, void *data,int nbsamples);
 
 int lvp_soundtouch_recive_sample(void *st,void *data,uint32_t maxsample);
 
+void  lvp_soundtouch_destroy(void *st);
+
 #endif

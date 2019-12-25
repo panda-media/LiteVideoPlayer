@@ -12,6 +12,8 @@
 #define LVP_EVENT_PAUSE     "LVP_EVENT_PAUSE"
 #define LVP_EVENT_RESUME    "LVP_EVENT_RESUME"
 
+#define LVP_EVENT_CHANGE_AUDIO_FORMAT "LVP_EVENT_CHANGE_AUDIO_FORMAT"
+
 #define LVP_EVENT_CHANGE_STREAM "LVP_EVENT_CHANGE_STREAM"///< user change stream
                                                         /// if media has multiple stream
                                                         ///most media has multiple audio stream and multiple sub

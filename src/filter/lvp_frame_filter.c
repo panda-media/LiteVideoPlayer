@@ -61,7 +61,6 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
 		{
 			f->filtered_audio_frame = (AVFrame*)sub_event->data;
 		}
-		return ret;
 	}
 	else {
 		src_frame = (AVFrame*)sub_event->data;

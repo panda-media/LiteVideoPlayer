@@ -50,6 +50,7 @@ static int handle_change_format(LVPEvent* ev, void* usrdata) {
 
 		lvp_mutex_unlock(&r->mutex);
 	}
+	return LVP_OK;
 }
 
 static int handle_frame(LVPEvent* ev, void* usrdata) {
@@ -68,7 +69,7 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 	if (r->target.format == AV_SAMPLE_FMT_NONE && frame->format > AV_SAMPLE_FMT_DBL) {
 		//set planner to signal planner
 		r->target.format = frame->format - 5;
-		r->target.format = AV_SAMPLE_FMT_S16;
+		//r->target.format = frame->;
 		r->target.channels = frame->channels;
 		r->target.sample_rate = frame->sample_rate;
 	}
@@ -108,7 +109,7 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 		return LVP_E_FATAL_ERROR;
 	}
 	lvp_mutex_lock(&r->mutex);
-	ret = swr_convert(r->swr, dstframe->data, dstframe->nb_samples, frame->extended_data, frame->nb_samples);
+	ret = swr_convert(r->swr, dstframe->data, dstframe->nb_samples, (const uint8_t**)frame->extended_data, frame->nb_samples);
 	lvp_mutex_unlock(&r->mutex);
 	if (ret <= 0) {
 		lvp_error(r->log, "swr convert error", NULL);
@@ -148,6 +149,12 @@ static int filter_init(struct lvp_module* module,
 	}
 
 	lvp_mutex_create(&r->mutex);
+
+	ret  = lvp_event_control_add_listener(r->ctl,LVP_EVENT_CHANGE_AUDIO_FORMAT,handle_change_format,r);
+	if(ret != LVP_OK){
+		lvp_error(r->log,"add %s listener error",LVP_EVENT_CHANGE_AUDIO_FORMAT);
+		return LVP_E_FATAL_ERROR;
+	}
 
 	//todo use options set target format
 
