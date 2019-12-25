@@ -11,9 +11,41 @@ static void filter_sub_module_free(void *data,void *usr_data){
 static int handle_frame(LVPEvent *ev,void *usr_data){
     assert(ev);
     LVPFrameFilter *f = (LVPFrameFilter*)usr_data;
+	AVFrame* filtered_frame = NULL;
+	AVFrame* src_frame = (AVFrame*)ev->data;
+	enum AVMediaType frame_type = AVMEDIA_TYPE_UNKNOWN;
+	if (src_frame->width > 0) {
+		filtered_frame = f->filtered_video_frame;
+		frame_type = AVMEDIA_TYPE_VIDEO;
+	}if (src_frame->channels > 0) {
+		filtered_frame = f->filtered_audio_frame;
+		frame_type = AVMEDIA_TYPE_AUDIO;
+	}
+
+	//resend filted frame
+	if (filtered_frame) {
+		LVPEvent* must_handle_ev = lvp_event_alloc(filtered_frame, LVP_EVENT_FILTER_SEND_FRAME, LVP_TRUE);
+		int ret = lvp_event_control_send_event(f->ctl, must_handle_ev);
+		if (ret == LVP_E_NO_MEM) {
+			lvp_event_free(must_handle_ev);
+			return ret;
+		}
+		else {
+			if (frame_type == AVMEDIA_TYPE_VIDEO) {
+				f->filtered_video_frame = NULL;
+			}
+			else if (frame_type == AVMEDIA_TYPE_AUDIO)
+			{
+				f->filtered_audio_frame = NULL;
+			}
+			lvp_event_free(must_handle_ev);
+			av_frame_free(&filtered_frame);
+			return ret;
+		}
+	}
 
 
-	AVFrame* src_frame = av_frame_clone(ev->data);
+	src_frame = av_frame_clone(ev->data);
 	LVPEvent* sub_event = lvp_event_alloc(src_frame, LVP_EVENT_FILTER_GOT_FRAME, LVP_FALSE);
     lvp_event_control_send_event(f->ctl,sub_event);
 
@@ -21,9 +53,28 @@ static int handle_frame(LVPEvent *ev,void *usr_data){
     LVPEvent *must_handle_ev = lvp_event_alloc(sub_event->data,LVP_EVENT_FILTER_SEND_FRAME,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
 
-	//filter change data, and free src_frame;
-	src_frame = (AVFrame*)sub_event->data;
-	av_frame_free(&src_frame);
+	if (ret == LVP_E_NO_MEM) {
+		if (frame_type == AVMEDIA_TYPE_VIDEO) {
+			f->filtered_video_frame = (AVFrame*)sub_event->data;
+		}
+		else if (frame_type == AVMEDIA_TYPE_AUDIO)
+		{
+			f->filtered_audio_frame = (AVFrame*)sub_event->data;
+		}
+		return ret;
+	}
+	else {
+		src_frame = (AVFrame*)sub_event->data;
+		if (frame_type == AVMEDIA_TYPE_VIDEO) {
+			f->filtered_video_frame = NULL;
+		}
+		else if (frame_type == AVMEDIA_TYPE_AUDIO)
+		{
+			f->filtered_audio_frame = NULL;
+		}
+		av_frame_free(&src_frame);
+	}
+
 
 
 	lvp_event_free(must_handle_ev);

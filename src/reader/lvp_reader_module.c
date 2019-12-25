@@ -10,7 +10,8 @@ static int ff_interrupt_call(void *data){
 
 static void* reader_thread(void *data){
     LVPReaderModule *m = (LVPReaderModule*)data;
-     m->avctx = avformat_alloc_context();
+    m->is_reader_thread_run = LVP_TRUE;
+    m->avctx = avformat_alloc_context();
     AVFormatContext *fmt = m->avctx;
     lvp_debug(m->log,"in reader thread",NULL);
 
@@ -54,36 +55,35 @@ static void* reader_thread(void *data){
         LVPSENDEVENT(m->ctl,LVP_EVENT_SELECT_STREAM,m->sub_stream);
     }
 
-    m->is_reader_thread_run = LVP_TRUE;
     ret = 0;
-    AVPacket ipkt;
+    AVPacket *ipkt = av_packet_alloc();
     LVP_BOOL need_read = LVP_TRUE;
 
 	//for submodule use
-	LVPEvent* sub_ev = lvp_event_alloc(&ipkt, LVP_EVENT_READER_GOT_FRAME, LVP_FALSE);
+	LVPEvent* sub_ev = lvp_event_alloc(ipkt, LVP_EVENT_READER_GOT_FRAME, LVP_FALSE);
 
     //for other core module use
-    LVPEvent *ev = lvp_event_alloc(&ipkt,LVP_EVENT_READER_SEND_FRAME,LVP_TRUE);
+    LVPEvent *ev = lvp_event_alloc(ipkt,LVP_EVENT_READER_SEND_FRAME,LVP_TRUE);
     while (m->is_reader_thread_run)
     {
         if (need_read)
         {
             lvp_mutex_lock(&m->avctx_mutex);
-            ret = av_read_frame(fmt,&ipkt);
+            ret = av_read_frame(fmt,ipkt);
             lvp_mutex_unlock(&m->avctx_mutex);
-			ipkt.pts = av_q2d(fmt->streams[ipkt.stream_index]->time_base) * ipkt.pts*1000;
+			ipkt->pts = av_q2d(fmt->streams[ipkt->stream_index]->time_base) * ipkt->pts*1000;
             need_read = LVP_FALSE;
         }
 
         //not select stream
 		int select_stream = 0;
-		if (m->astream && ipkt.stream_index == m->astream->index) {
+		if (m->astream && ipkt->stream_index == m->astream->index) {
 			select_stream = 1;
 		}
-		if (m->vstream && ipkt.stream_index == m->vstream->index) {
+		if (m->vstream && ipkt->stream_index == m->vstream->index) {
 			select_stream = 1;
 		}
-		if (m->sub_stream && ipkt.stream_index == m->sub_stream->index) {
+		if (m->sub_stream && ipkt->stream_index == m->sub_stream->index) {
 			select_stream = 1;
 		}
 		if (select_stream == 0) {
@@ -108,7 +108,7 @@ static void* reader_thread(void *data){
 
         //need_read = e_ret == LVP_OK?LVP_TRUE:LVP_FALSE;
 		if (e_ret == LVP_OK) {
-			av_packet_unref(&ipkt);
+			av_packet_unref(ipkt);
 			need_read = LVP_TRUE;
 		}
 		else {
@@ -118,7 +118,8 @@ static void* reader_thread(void *data){
 
     }
 
-    av_packet_unref(&ipkt);
+    av_packet_unref(ipkt);
+	av_packet_free(&ipkt);
     lvp_event_free(ev);
 	lvp_event_free(sub_ev);
 

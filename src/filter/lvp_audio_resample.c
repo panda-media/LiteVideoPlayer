@@ -13,7 +13,44 @@ typedef struct lvp_audio_resample {
 	LVPLog* log;
 	LVPAudioFormat target;
 	LVPAudioFormat src;
+	lvp_mutex mutex;
 }LVPAudioResample;
+
+static int create_av_swr(LVPAudioResample* r) {
+	if (r->swr) {
+		swr_close(r->swr);
+		swr_free(&r->swr);
+		r->swr = NULL;
+	}
+
+	r->swr = swr_alloc_set_opts(NULL, av_get_default_channel_layout(r->target.channels),
+		r->target.format, r->target.sample_rate, av_get_default_channel_layout(r->src.channels),
+		r->src.format, r->src.sample_rate,0, NULL);
+	if (r->swr == NULL) {
+		lvp_error(r->log, "audio resample error", NULL);
+		return LVP_E_FATAL_ERROR;
+	}
+	int ret = swr_init(r->swr);
+	if (ret < 0) {
+		lvp_error(r->log, "swr init error", NULL);
+
+		return LVP_E_FATAL_ERROR;
+	}
+	return LVP_OK;
+}
+
+static int handle_change_format(LVPEvent* ev, void* usrdata) {
+	LVPAudioFormat* format = (LVPAudioFormat*)ev->data;
+	LVPAudioResample* r = (LVPAudioResample*)usrdata;
+	if (format->channels != r->target.channels ||
+		format->format != r->target.format ||
+		format->sample_rate != r->target.sample_rate)
+	{
+		lvp_mutex_lock(&r->mutex);
+
+		lvp_mutex_unlock(&r->mutex);
+	}
+}
 
 static int handle_frame(LVPEvent* ev, void* usrdata) {
 	AVFrame* frame = (AVFrame*)ev->data;
@@ -31,7 +68,7 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 	if (r->target.format == AV_SAMPLE_FMT_NONE && frame->format > AV_SAMPLE_FMT_DBL) {
 		//set planner to signal planner
 		r->target.format = frame->format - 5;
-		//r->target.format = AV_SAMPLE_FMT_S16;
+		r->target.format = AV_SAMPLE_FMT_S16;
 		r->target.channels = frame->channels;
 		r->target.sample_rate = frame->sample_rate;
 	}
@@ -48,26 +85,12 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 		r->src.channels = frame->channels;
 		r->src.sample_rate = frame->sample_rate;
 
-
-		if (r->swr) {
-			swr_close(r->swr);
-			swr_free(&r->swr);
+		lvp_mutex_lock(&r->mutex);
+		int ret = create_av_swr(r);
+		lvp_mutex_unlock(&r->mutex);
+		if (ret != LVP_OK) {
+			return ret;
 		}
-
-		r->swr = swr_alloc_set_opts(NULL, av_get_default_channel_layout(r->target.channels),
-			r->target.format, r->target.sample_rate, frame->channel_layout, frame->format, frame->sample_rate,
-			0, 0);
-		if (r->swr == NULL) {
-			lvp_error(r->log, "audio resample error", NULL);
-			return LVP_E_FATAL_ERROR;
-		}
-		int ret = swr_init(r->swr);
-		if (ret < 0) {
-			lvp_error(r->log, "swr init error", NULL);
-
-			return LVP_E_FATAL_ERROR;
-		}
-
 	}
 
 	AVFrame* dstframe = av_frame_alloc();
@@ -75,20 +98,23 @@ static int handle_frame(LVPEvent* ev, void* usrdata) {
 	dstframe->channels = r->target.channels;
 	dstframe->sample_rate = r->target.sample_rate;
 	dstframe->nb_samples = frame->nb_samples * r->target.sample_rate / frame->sample_rate + 256;
+	dstframe->pts = frame->pts;
+	dstframe->pkt_dts = frame->pkt_dts;
 
-	int ret = av_frame_get_buffer(dstframe, 0);
+	int ret = av_frame_get_buffer(dstframe, 1);
 	if (ret < 0) {
 		lvp_error(r->log, "get buffer error", NULL);
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
-	ret = swr_convert(r->swr, dstframe->data, dstframe->nb_samples, (const uint8_t * *)frame->data, frame->nb_samples);
+	lvp_mutex_lock(&r->mutex);
+	ret = swr_convert(r->swr, dstframe->data, dstframe->nb_samples, frame->extended_data, frame->nb_samples);
+	lvp_mutex_unlock(&r->mutex);
 	if (ret <= 0) {
 		lvp_error(r->log, "swr convert error", NULL);
 		av_frame_free(&dstframe);
 		return LVP_E_FATAL_ERROR;
 	}
-	av_frame_copy_props(dstframe, frame);
 	dstframe->nb_samples = ret;
 	ev->data = dstframe;
 	av_frame_free(&frame);
@@ -121,6 +147,8 @@ static int filter_init(struct lvp_module* module,
 		return LVP_E_FATAL_ERROR;
 	}
 
+	lvp_mutex_create(&r->mutex);
+
 	//todo use options set target format
 
 	return LVP_OK;
@@ -131,6 +159,8 @@ static void filter_close(struct lvp_module* module){
 	LVPAudioResample* r = (LVPAudioResample*)module->private_data;
 
 	lvp_event_control_remove_listener(r->ctl, LVP_EVENT_FILTER_GOT_FRAME, handle_frame, r);
+	lvp_mutex_lock(&r->mutex);
+	lvp_mutex_unlock(&r->mutex);
 	if (r->log) {
 		lvp_log_free(r->log);
 	}
@@ -139,6 +169,7 @@ static void filter_close(struct lvp_module* module){
 		swr_close(r->swr);
 		swr_free(&r->swr);
 	}
+	lvp_mutex_free(&r->mutex);
 	lvp_mem_free(r);
 	module->private_data = NULL;
 

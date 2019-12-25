@@ -62,7 +62,7 @@ static int init_sdl_audio(LVPAudioRender *r,AVFrame *f){
 
 	r->audio_spec = lvp_mem_mallocz(sizeof(SDL_AudioSpec));
     wanted.silence = 0;
-    wanted.samples = f->nb_samples;
+    wanted.samples = 1024;
     wanted.userdata = r;
     wanted.callback = audio_call;
 	wanted.freq = f->sample_rate;
@@ -90,9 +90,10 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
     AVFrame *frame = (AVFrame*)ev->data;
     LVPAudioRender *r = (LVPAudioRender*)usrdata;
 
-    size_t one_frame_size = av_samples_get_buffer_size(frame->linesize,frame->channels,frame->nb_samples,frame->format,0);
-    if(r->buf == NULL){
-        r->buf_max = one_frame_size * 6;
+	size_t one_frame_size = av_get_bytes_per_sample(frame->format);
+	size_t size = one_frame_size * frame->nb_samples * frame->channels;
+	if(r->buf == NULL){
+        r->buf_max = size * 6;
         r->buf =(uint8_t*)lvp_mem_mallocz(r->buf_max);
         int ret = init_sdl_audio(r,frame);
         SDL_Init(SDL_INIT_AUDIO);
@@ -101,7 +102,7 @@ static int handle_audio(LVPEvent *ev, void *usrdata){
             return LVP_E_FATAL_ERROR;
         }
     }
-    int inbuf_size = one_frame_size;
+    int inbuf_size = size;
     if(inbuf_size+r->buf_len > r->buf_max){
         //tell avsync audio buf time;
 		r->buf_time = r->buf_len * 1000 / r->audio_spec->freq / r->one_sample_size;

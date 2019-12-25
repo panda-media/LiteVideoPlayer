@@ -16,8 +16,6 @@ int lvp_cpp_test(){
 extern "C"
 void *lvp_create_soundtouch(){
     SoundTouch *st = new(SoundTouch);
-    st->setSetting(SETTING_USE_QUICKSEEK,1);
-    st->setSetting(SETTING_USE_AA_FILTER,1);
     return st;
 }
 
@@ -45,14 +43,16 @@ int lvp_soundtouch_set_rate(void *st, double rate){
 extern "C"
 int lvp_soundtouch_change_tempo(void *st, int tempo){
     SoundTouch *soundTouch = (SoundTouch*)st;
-    soundTouch->setTempoChange(tempo);
+	soundTouch->setTempoChange(tempo);
     return LVP_OK;
 }
 
 extern "C"
-int lvp_soundtouch_set_sample_rate(void *st, uint rate){
+int lvp_soundtouch_set_sample_rate(void *st, uint32_t rate){
     SoundTouch *soundTouch = (SoundTouch*)st;
     soundTouch->setSampleRate(rate);
+    soundTouch->setSetting(SETTING_USE_QUICKSEEK,1);
+    soundTouch->setSetting(SETTING_USE_AA_FILTER,1);
     return LVP_OK;
 }
 

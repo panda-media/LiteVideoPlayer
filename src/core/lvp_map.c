@@ -40,7 +40,7 @@ static void lvp_map_entry_free(LVPMapEntry *entry){
 }
 
 static void lvp_map_clear(LVPMap *map){
-    assert(map->entrys);
+    //assert(map->entrys);
     for (size_t i = 0; i < map->size; i++)
     {
         LVPMapEntry *root = map->entrys[i];

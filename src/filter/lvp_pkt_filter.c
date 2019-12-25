@@ -4,6 +4,23 @@
 static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     assert(ev);
     LVPPktFilter *f = (LVPPktFilter*)usr_data;
+
+	//resend filted pkt
+	if (f->filtered_pkt != NULL) {
+		LVPEvent *must_handle_ev = lvp_event_alloc(f->filtered_pkt,LVP_EVENT_FILTER_SEND_PKT,LVP_TRUE);
+		int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
+		if (ret == LVP_E_NO_MEM) {
+			lvp_event_free(must_handle_ev);
+			return ret;
+		}
+		else {
+			av_packet_free(&f->filtered_pkt);
+			f->filtered_pkt = NULL;
+			lvp_event_free(must_handle_ev);
+			return ret;
+		}
+	}
+
 	
 	AVPacket* src_pkt = av_packet_clone(ev->data);
 
@@ -16,8 +33,15 @@ static int handle_reader_send_frame(LVPEvent *ev, void *usr_data){
     LVPEvent *must_handle_ev = lvp_event_alloc(sub_event->data,LVP_EVENT_FILTER_SEND_PKT,LVP_TRUE);
     int ret = lvp_event_control_send_event(f->ctl,must_handle_ev);
 
-	src_pkt = sub_event->data;
-	av_packet_free(&src_pkt);
+	//this packet need resend
+	if (ret == LVP_E_NO_MEM) {
+		f->filtered_pkt = sub_event->data;
+	}
+	else {
+		src_pkt = sub_event->data;
+		av_packet_free(&src_pkt);
+		f->filtered_pkt = NULL;
+	}
 
 	lvp_event_free(must_handle_ev);
 	lvp_event_free(sub_event);
@@ -82,6 +106,9 @@ static void filter_close(struct lvp_module *module){
     }
 	if (f->log) {
 		lvp_log_free(f->log);
+	}
+	if (f->filtered_pkt) {
+		av_packet_free(&f->filtered_pkt);
 	}
 	lvp_mem_free(f);
 	module->private_data = NULL;

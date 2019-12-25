@@ -58,9 +58,9 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
         return LVP_E_FATAL_ERROR;
     }
     if(p->pts<0){
-		lvp_error(cache->log, "cache queue error", NULL);
-		lvp_mutex_unlock(&cache->mutex);
-        return LVP_E_FATAL_ERROR;
+	//	lvp_error(cache->log, "cache queue error", NULL);
+	//	lvp_mutex_unlock(&cache->mutex);
+     //   return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);
 	lvp_mutex_unlock(&cache->mutex);
@@ -81,7 +81,7 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
 
     //this frame no audio sample we don't need cache it
     if(type == AVMEDIA_TYPE_AUDIO && f->nb_samples == 0){
-        printf("NCACHE\n");
+      //  printf("NCACHE\n");
         return LVP_OK;
     }
 

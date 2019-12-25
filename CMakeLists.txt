@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 #release
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Werror -Wunused-parameter -D LVP_WIN32")
 #debug
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  -Werror")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  -Werror")
 
 project(lvp)
 
@@ -11,13 +11,15 @@ project(lvp)
 include_directories("./deps/ffmpeg/linux/include/")
 link_directories("./deps/ffmpeg/linux/lib/")
 
+include_directories("./deps/ffmpeg/windows/include/")
+link_directories("./deps/ffmpeg/windows/lib/")
 include_directories("./deps/SDL2/windows/")
 link_directories("./deps/SDL2/windows/lib/x64/")
 
 include_directories("./deps/soundtouch/")
+link_directories("./deps/soundtouch/")
 
 add_library(lvp STATIC 
-            ./src/core/lvp_cpp.cc
             ./src/core/lvp_array.c
             ./src/core/lvp_avsync.c
             ./src/core/lvp_condition.c
@@ -34,6 +36,7 @@ add_library(lvp STATIC
             ./src/core/lvp_str.c
             ./src/core/lvp_time.c
             ./src/core/lvp_thread.c
+            ./src/core/lvp_cpp.cc
 
             ./src/decoder/lvp_decoder.c
             ./src/decoder/lvp_hwaccel_decoder.c
@@ -66,8 +69,6 @@ target_link_libraries(
     avutil
     SDL2
     SDL2main
-    SoundTouch
-    m
-    pthread
-    z
+    SoundTouchd
+	stwapperd
 )
