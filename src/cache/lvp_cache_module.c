@@ -60,7 +60,7 @@ static int handle_req_pkt(LVPEvent *ev, void *usrdata){
     if(p->pts<0){
 	//	lvp_error(cache->log, "cache queue error", NULL);
 	//	lvp_mutex_unlock(&cache->mutex);
-     //   return LVP_E_FATAL_ERROR;
+    //   return LVP_E_FATAL_ERROR;
     }
     AVPacket *ref = av_packet_clone(p);
 	lvp_mutex_unlock(&cache->mutex);
@@ -303,12 +303,14 @@ static void module_close(struct lvp_module *module){
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_PKT, handle_req_pkt, cache);
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_FRAME, handle_frame, cache);
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_PKT, handle_pkt, cache);
+    lvp_mutex_lock(&cache->mutex);
     if(cache->data){
         lvp_nqueue_free(cache->data);
     }
 	if (cache->log) {
 		lvp_log_free(cache->log);
 	}
+    lvp_mutex_unlock(&cache->mutex);
 	lvp_mutex_free(&cache->mutex);
 	lvp_mem_free(cache);
 }

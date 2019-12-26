@@ -133,6 +133,10 @@ static void* decoder_thread(void *data){
 				lvp_error(d->log, "req pkt error", NULL);
 				break;
 			}
+			if(ev->data == &d->codec_type){
+				lvp_error(d->log,"req pkt error",NULL);
+				break;
+			}
 		}
 		d->ipkt = (AVPacket*)ev->data;
 		lvp_mutex_lock(&d->mutex);

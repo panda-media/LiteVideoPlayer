@@ -103,7 +103,7 @@ static int filter_init(LVPModule *m,
     f->log->log_call = log->log_call;
     f->log->usr_data = log->usr_data;
     
-    f->tempo = 1.5;
+    f->tempo = 1.0;
 
     int ret = lvp_event_control_add_listener(f->ctl,LVP_EVENT_CHANGE_TEMPO,handle_change_tempo,f);
     ret |= lvp_event_control_add_listener(f->ctl,LVP_EVENT_FILTER_GOT_FRAME,handle_frame,f);

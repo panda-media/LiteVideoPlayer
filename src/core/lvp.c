@@ -3,12 +3,14 @@
 #include <SDL2/SDL.h>
 
 int main(int argc , char *argv[]){
-	while (1) {
+	int j = 2;
+	while (j>0) {
+		//j--;
 		printf("%s\n", LVP_VER);
 		LVPCore* core = lvp_core_alloc();
 		if (argc < 2 || argc > 3) {
 			printf("use LiteVideoPlayer input.xx options \n");
-			lvp_core_set_url(core, "c:/Ñ¸À×ÏÂÔØ/oupt/oupt.mkv");
+			lvp_core_set_url(core, "c:/è¿…é›·ä¸‹è½½/oupt/oupt.mkv");
 			//    return -1;
 		}
 
@@ -20,17 +22,19 @@ int main(int argc , char *argv[]){
 		}
 		lvp_core_play(core);
 		int i = 0;
-		while (i<10000)
+		while (i<1000)
 		{
-			SDL_Event ev;
-			while (SDL_PollEvent(&ev));
-			if (ev.type == SDL_QUIT) {
-				break;
-			}
+		//	SDL_Event ev;
+		//	while (SDL_PollEvent(&ev));
+		//	if (ev.type == SDL_QUIT) {
+		//		break;
+		//	}
 			lvp_sleep(10);
 			i++;
+			
 		}
 		lvp_core_free(core);
+		SDL_Quit();
 	}
     return 0;
 }
