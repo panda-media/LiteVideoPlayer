@@ -135,7 +135,9 @@ static void* decoder_thread(void *data){
 			}
 		}
 		d->ipkt = (AVPacket*)ev->data;
+		lvp_mutex_lock(&d->mutex);
 		ret = avcodec_send_packet(d->avctx, d->ipkt);
+		lvp_mutex_unlock(&d->mutex);
 		if (ret < 0 && ret != AVERROR(EAGAIN)) {
 			lvp_error(d->log, "send packet error %d", ret);
 			av_packet_free(&d->ipkt);
@@ -149,7 +151,9 @@ static void* decoder_thread(void *data){
 			need_req = 1;
 		}
 
+		lvp_mutex_lock(&d->mutex);
 		ret = avcodec_receive_frame(d->avctx, d->iframe);
+		lvp_mutex_unlock(&d->mutex);
 		if (ret < 0 && ret != AVERROR(EAGAIN)) {
 			lvp_error(d->log, "receive frame error %d", ret);
 			break;
@@ -373,6 +377,7 @@ static int module_init(struct lvp_module *module,
     decoder->log->usr_data = log->usr_data;
     decoder->options = options;
 	decoder->hw_pix_fmt = AV_PIX_FMT_NONE;
+	lvp_mutex_create(&decoder->mutex);
 
     int ret = lvp_event_control_add_listener(ctl,LVP_EVENT_SELECT_STREAM,handle_select_stream,decoder);
     if(ret != LVP_OK){
@@ -413,6 +418,9 @@ static void module_close(struct lvp_module *module){
 		decoder->decoder_thread_run = 0;
 		lvp_thread_join(decoder->dec_thread);
 	}
+	lvp_mutex_lock(&decoder->mutex);
+	lvp_mutex_unlock(&decoder->mutex);
+	lvp_mutex_free(&decoder->mutex);
 
 	if (decoder->avctx != NULL) {
 		avcodec_close(decoder->avctx);

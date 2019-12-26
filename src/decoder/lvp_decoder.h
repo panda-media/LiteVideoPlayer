@@ -22,6 +22,8 @@ typedef struct lvp_decoder{
     enum AVMediaType codec_type;
     AVStream *stream;
 
+	lvp_mutex mutex;
+
 	//hwaccel
 	AVBufferRef* hw_device_ctx;
 	enum AVPixelFormat hw_pix_fmt;

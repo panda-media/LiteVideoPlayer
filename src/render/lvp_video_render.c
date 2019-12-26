@@ -6,13 +6,6 @@ int handle_update(LVPEvent *ev,void *usrdata){
 
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
 
-    SDL_Event event;
-    while (SDL_PollEvent(&event));
-    if(event.type == SDL_QUIT){
-       // LVPSENDEVENT(r->ctl,LVP_EVENT_CLOSE,NULL);
-    }
-    
-
     AVFrame *f = (AVFrame*)ev->data;
 	if (f->width <= 0) {
 		return LVP_OK;
