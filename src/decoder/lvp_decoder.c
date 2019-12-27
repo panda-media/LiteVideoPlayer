@@ -66,7 +66,7 @@ static int find_android_decoder(LVPDecoder *decoder){
 //options lvpop_codec
 static int find_best_video_decoder(LVPDecoder *decoder){
     if(decoder->options){
-        const char *force_codec_name = lvp_map_get(decoder->options,"lvpop_codec");
+        const char *force_codec_name = lvp_map_get(decoder->options,"lvp_vcodec");
         if(force_codec_name)
             decoder->codec = avcodec_find_decoder_by_name(force_codec_name);
     }

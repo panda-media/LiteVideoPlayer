@@ -10,7 +10,8 @@ int main(int argc , char *argv[]){
 		LVPCore* core = lvp_core_alloc();
 		if (argc < 2 || argc > 3) {
 			printf("use LiteVideoPlayer input.xx options \n");
-			lvp_core_set_url(core, "c:/迅雷下载/oupt/oupt.mkv");
+			lvp_core_set_url(core, "c:/oupt/oupt.mkv");
+			lvp_core_set_option(core, "-lvp_vcodec h264_cuvid");
 			//    return -1;
 		}
 
@@ -24,11 +25,11 @@ int main(int argc , char *argv[]){
 		int i = 0;
 		while (i<1000)
 		{
-		//	SDL_Event ev;
-		//	while (SDL_PollEvent(&ev));
-		//	if (ev.type == SDL_QUIT) {
-		//		break;
-		//	}
+			SDL_Event ev;
+			while (SDL_PollEvent(&ev));
+			if (ev.type == SDL_QUIT) {
+				break;
+			}
 			lvp_sleep(10);
 			i++;
 			

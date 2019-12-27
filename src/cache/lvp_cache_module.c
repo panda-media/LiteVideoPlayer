@@ -301,8 +301,10 @@ static void module_close(struct lvp_module *module){
     LVPCache *cache = (LVPCache*)module->private_data;
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_FRAME, handle_req_frame, cache);
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_PKT, handle_req_pkt, cache);
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_REQ_SUB, handle_req_sub, cache);;
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_FRAME, handle_frame, cache);
 	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_FILTER_SEND_PKT, handle_pkt, cache);
+	lvp_event_control_remove_listener(cache->ctl, LVP_EVENT_DECODER_SEND_SUB, handle_sub, cache);
     lvp_mutex_lock(&cache->mutex);
     if(cache->data){
         lvp_nqueue_free(cache->data);

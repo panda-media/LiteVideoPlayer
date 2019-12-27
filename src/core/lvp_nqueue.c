@@ -74,6 +74,8 @@ void lvp_nqueue_clear(LVPNQueue* q)
 			{
 				lvp_mem_free(entry->data);
 			}
+			entry->data = NULL;
+			entry->usr_data = NULL;
 		}
 		q->size--;
 		q->rpos++;

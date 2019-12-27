@@ -127,6 +127,7 @@ static void module_close(struct lvp_module *module){
 		SDL_DestroyWindow(r->window);
 	}
 	lvp_mem_free(r);
+	lvp_mem_free(zero_data);
 	module->private_data = NULL;
 
 }
