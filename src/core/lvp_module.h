@@ -34,9 +34,10 @@ struct lvp_module{
  * this function create new module so you can use this return 
  * @param module_name module name, if name = NULL will return first module the type you pass
  * @param type what type you want, must pass
+ * @param extra_module extra module, may user dynamic add use lvp_core_add_dynamic_module
  * @return NULL for not find
  */
-LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type);
+LVPModule* lvp_module_get_module(const char* module_name, LVPModuleType type, LVPMap* extra_module);
 
 /**
  * init module

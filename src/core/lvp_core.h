@@ -57,15 +57,16 @@ typedef struct lvp_core{
     LVPMap *options; /***< user options*/
     LVPEventControl *event_control;
     LVPLog *log;
+	LVPMap* extra_modules;
 
     int status;
     char *option_str;
     char *input_str;
 }LVPCore;
 
-typedef int (*dynamic_module_init)(LVPModule *module, LVPMap *options, LVPEventControl *ctl,LVPLog *log) ;
+typedef int (*custom_module_init)(LVPModule *module, LVPMap *options, LVPEventControl *ctl,LVPLog *log) ;
 
-typedef void (*dynamic_module_close)(LVPModule *module) ;
+typedef void (*custom_module_close)(LVPModule *module) ;
 
 /**
  * lvp core alloc
@@ -142,12 +143,15 @@ int lvp_core_seek(LVPCore *core,double pts);
  * lvp core register dynamic module
  * 
  */
-int lvp_core_register_dynamic_module(dynamic_module_init minit,dynamic_module_close mclose,
-                                    const char *name, int type,int private_data_size);
+int lvp_core_register_dynamic_module(LVPCore *core,custom_module_init minit,custom_module_close mclose,
+                                    const char *name, int type,void *private_data);
+
+int lvp_load_static_custom_module(custom_module_init minit, custom_module_close mclose,
+	const char* name, int type, int private_data_size);
 
 /**
  * lvp core unload dynamic module,
  */
-void lvp_core_unload_dynamic_module();
+void lvp_unload_static_custom_module();
 
 #endif

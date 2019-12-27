@@ -65,3 +65,10 @@ deps/*
 /lvpBase/lvpBaseType/*.filters
 /.vs
 /src/test/lvp_core_test/.vs
+*.ipch
+*.tlog
+*.log
+*.db
+*.props
+*.cbt
+*.idx

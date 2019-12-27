@@ -4,6 +4,7 @@ LVPCore* lvp_core_alloc(){
     LVPCore *core = (LVPCore*)lvp_mem_mallocz(sizeof(*core));
     core->modules = lvp_list_alloc();
     core->options = lvp_map_alloc();
+	core->extra_modules = lvp_map_alloc();
     core->event_control = lvp_event_control_alloc();
     core->log = lvp_log_alloc("LVP CORE");
     return core;
@@ -71,7 +72,7 @@ static int init_basic_module(LVPCore *core,const char *default_module_name,
         module_name = lvp_map_get(core->options,option_key);
     }
     module_name = module_name == NULL ? default_module_name : module_name;
-    module = lvp_module_get_module(module_name,type);
+    module = lvp_module_get_module(module_name,type,core->extra_modules);
     if(!module){
         lvp_error(NULL,"can not find module %s for type %d",module_name?module_name:default_module_name,type);
         return LVP_E_NO_MEDIA;
@@ -204,18 +205,30 @@ int lvp_core_seek(LVPCore *core,double pts){
     return ret;
 }
 
-int lvp_core_register_dynamic_module(dynamic_module_init minit,dynamic_module_close mclose,
-                                    const char *name, int type,int private_data_size){
+int lvp_core_register_dynamic_module(LVPCore *core, custom_module_init minit,custom_module_close mclose,
+                                    const char *name, int type,void *private_data){
     LVPModule *m = (LVPModule*)lvp_mem_mallocz(sizeof(LVPModule));
     m->module_init = minit;
     m->module_close = mclose;
     m->name = (char*)name;
     m->type = type;
-    m->private_data_size = private_data_size;
-    return lvp_module_add(m);
+	m->private_data = private_data;
+	lvp_map_add(core->extra_modules, name, m, NULL, NULL, 1);
+	return LVP_OK;
+}
+
+int lvp_load_static_custom_module(custom_module_init minit, custom_module_close mclose,
+	const char* name, int type, int private_data_size) {
+    LVPModule *m = (LVPModule*)lvp_mem_mallocz(sizeof(LVPModule));
+    m->module_init = minit;
+    m->module_close = mclose;
+    m->name = (char*)name;
+    m->type = type;
+	m->private_data_size = private_data_size;
+	return lvp_module_add(m);
 }
 
 
-void lvp_core_unload_dynamic_module(){
+void lvp_unload_custom_module(){
     lvp_module_free_dynamic_module();
 }

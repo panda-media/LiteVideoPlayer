@@ -1,7 +1,7 @@
 #include "lvp_module.h"
 #include "lvp_modules.h"
 
-LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type){
+LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type, LVPMap *extra_module){
     LVPModule *m = NULL;
     void *op = NULL;
     for ( ; (m = lvp_module_iterate(&op))!= NULL;){
@@ -21,7 +21,8 @@ LVPModule* lvp_module_get_module(const char *module_name, LVPModuleType type){
         m = NULL;
     }
     if(!m){
-        return NULL;
+		m = lvp_map_get(extra_module, module_name);
+        return m;
     }
     LVPModule *ret = (LVPModule*)lvp_mem_mallocz(sizeof(*ret));
     memcpy(ret,m,sizeof(*ret));

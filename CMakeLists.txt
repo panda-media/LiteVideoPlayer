@@ -19,7 +19,7 @@ link_directories("./deps/SDL2/windows/lib/x64/")
 include_directories("./deps/soundtouch/")
 link_directories("./deps/soundtouch/")
 
-add_library(lvp STATIC 
+add_library(lvp SHARED
             ./src/core/lvp_array.c
             ./src/core/lvp_avsync.c
             ./src/core/lvp_condition.c
@@ -56,6 +56,19 @@ add_library(lvp STATIC
 
 add_executable( LiteVideoPlayer
         ./src/core/lvp.c
+)
+
+target_link_libraries(
+	lvp
+
+	avformat
+    avcodec
+    swresample
+    swscale
+    avutil
+    SDL2
+    SDL2main
+    SoundTouchD_x64
 )
 
 target_link_libraries(
