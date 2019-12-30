@@ -3,6 +3,7 @@
 
 uint8_t *zero_data = NULL;
 int handle_update(LVPEvent *ev,void *usrdata){
+    return LVP_OK;
 
     LVPVideoRender *r = (LVPVideoRender*)usrdata;
 

@@ -46,7 +46,7 @@ LVP_BOOL lvp_thread_create(lvp_thread* thread, lvp_thread_func func, void *param
 }
 LVP_BOOL lvp_thread_join(lvp_thread lvpThread)
 {
-    return 0 == pthread_join(lvpThread, LVP_NULL);
+    return 0 == pthread_join((struct _opaque_pthread_t*)lvpThread, LVP_NULL);
 }
 
 #endif // LVP_LINUX

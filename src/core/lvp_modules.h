@@ -18,7 +18,7 @@ extern LVPModule lvp_video_render;
 extern LVPModule lvp_audio_render;
 extern LVPModule lvp_avsync_module;
 extern LVPModule lvp_audio_resample;
-extern LVPModule lvp_audio_tempo_filter;
+//extern LVPModule lvp_audio_tempo_filter;
 
 //all  module 
 static LVPModule *LVPModules[]={
@@ -38,7 +38,7 @@ static LVPModule *LVPModules[]={
 	&lvp_audio_render,
 	&lvp_avsync_module,
 	&lvp_audio_resample,
-    &lvp_audio_tempo_filter,
+ //   &lvp_audio_tempo_filter,
 };
 
 static LVPModule **DynamicModules = NULL;

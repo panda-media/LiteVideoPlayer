@@ -84,7 +84,7 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
         return LVP_OK;
     }
     //this frame no video data
-    if(type == AVMEDIA_TYPE_VIDEO && f->data == NULL){
+    if(type == AVMEDIA_TYPE_VIDEO && f->data[0] == NULL){
         return LVP_OK;
     }
 

@@ -40,7 +40,7 @@ static void got_frame(LVPAVSync *sync){
 static void sync_audio_master(LVPAVSync *sync){
     got_frame(sync);
     if(sync->aframe != NULL){
-		printf("%ld\r", sync->aframe->pts);
+		printf("%lld\r", sync->aframe->pts);
 		//if (sync->seeked == 1 && check_is_seek_frame(sync->aframe->pts,sync->seek_time) != 1)
 		//{
 		//	av_frame_unref(sync->aframe);
