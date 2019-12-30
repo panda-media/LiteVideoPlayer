@@ -214,6 +214,7 @@ int lvp_core_register_dynamic_module(LVPCore *core, custom_module_init minit,cus
     m->type = type;
 	m->private_data = private_data;
 	lvp_map_add(core->extra_modules, name, m, NULL, NULL, 1);
+    lvp_map_add(core->options,"lvp_extra_module",core->extra_modules,NULL,lvp_map_free,1);
 	return LVP_OK;
 }
 

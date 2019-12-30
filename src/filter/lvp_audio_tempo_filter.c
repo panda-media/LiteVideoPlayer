@@ -41,7 +41,6 @@ static int handle_frame(LVPEvent *ev, void *usrdata){
     int size = av_get_bytes_per_sample(frame->format)*frame->channels;
 
     lvp_soundtouch_send_sample(f->sound_touch,frame->data[0],frame->nb_samples);
-//	sound_touch_put_samples(frame->data[0], frame->nb_samples,f->soundTouch);
 
     AVFrame *tempo_frame = av_frame_alloc();
     int read_count = 0;
@@ -74,6 +73,9 @@ static int handle_frame(LVPEvent *ev, void *usrdata){
 
     tempo_frame->pts = frame->pts;
     tempo_frame->pkt_dts = frame->pkt_dts;
+    if(tempo_frame->nb_samples==0){
+        tempo_frame->flags |= AV_FRAME_FLAG_DISCARD;
+    }
 
     // free src frame 
     av_frame_free(&frame);

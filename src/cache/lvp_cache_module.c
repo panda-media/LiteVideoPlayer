@@ -81,7 +81,15 @@ static int handle_frame(LVPEvent *ev, void *usr_data){
 
     //this frame no audio sample we don't need cache it
     if(type == AVMEDIA_TYPE_AUDIO && f->nb_samples == 0){
-      //  printf("NCACHE\n");
+        return LVP_OK;
+    }
+    //this frame no video data
+    if(type == AVMEDIA_TYPE_VIDEO && f->data == NULL){
+        return LVP_OK;
+    }
+
+    // this frame discard
+    if(f->flags & AV_FRAME_FLAG_DISCARD){
         return LVP_OK;
     }
 

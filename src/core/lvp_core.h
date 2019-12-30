@@ -141,11 +141,15 @@ int lvp_core_seek(LVPCore *core,double pts);
 
 /**
  * lvp core register dynamic module
- * 
+ * the module will store in core options with key "lvp_extra_module"
+ * you can get you module in module init callback
  */
 int lvp_core_register_dynamic_module(LVPCore *core,custom_module_init minit,custom_module_close mclose,
                                     const char *name, int type,void *private_data);
-
+/**
+ * load module on static mem
+ * just need load once for each module
+ */
 int lvp_load_static_custom_module(custom_module_init minit, custom_module_close mclose,
 	const char* name, int type, int private_data_size);
 
