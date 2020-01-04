@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 #release
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Werror -Wunused-parameter -D LVP_WIN32")
 #debug
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  ")
 
 project(lvp)
 
@@ -16,8 +16,8 @@ link_directories("./deps/ffmpeg/windows/lib/")
 include_directories("./deps/SDL2/windows/")
 link_directories("./deps/SDL2/windows/lib/x64/")
 
-include_directories("./deps/soundtouch/")
-link_directories("./deps/soundtouch/")
+include_directories("./deps/SoundTouch/include")
+link_directories("./deps/SoundTouch/")
 
 add_library(lvp SHARED
             ./src/core/lvp_array.c
@@ -68,7 +68,7 @@ target_link_libraries(
     avutil
     SDL2
     SDL2main
-    SoundTouchD_x64
+    SoundTouch
 )
 
 target_link_libraries(
@@ -82,8 +82,8 @@ target_link_libraries(
     avutil
     SDL2
     SDL2main
-    SoundTouchD_x64
-   # z
-   # m
-   # pthread
+    SoundTouch
+    z
+    m
+    pthread
 )

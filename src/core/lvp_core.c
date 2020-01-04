@@ -37,6 +37,7 @@ int lvp_core_set_url(LVPCore *core, const char *input){
     assert(core);
     assert(input);
     int ret = lvp_str_dump(input,&core->input_str);
+    lvp_debug(core->log,"set url: %s",input);
     return ret;
 }
 
@@ -214,7 +215,7 @@ int lvp_core_register_dynamic_module(LVPCore *core, custom_module_init minit,cus
     m->type = type;
 	m->private_data = private_data;
 	lvp_map_add(core->extra_modules, name, m, NULL, NULL, 1);
-    lvp_map_add(core->options,"lvp_extra_module",core->extra_modules,NULL,lvp_map_free,1);
+    lvp_map_add(core->options,"lvp_extra_module",core->extra_modules,NULL,(lvp_custom_free)lvp_map_free,1);
 	return LVP_OK;
 }
 
