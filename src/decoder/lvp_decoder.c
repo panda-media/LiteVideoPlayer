@@ -118,6 +118,12 @@ static void* decoder_thread(void *data){
     int need_req = 1;
     d->iframe = av_frame_alloc();
 	d->sw_frame = av_frame_alloc();
+	int64_t pre_apts = 0;
+	int64_t pre_vpts = 0;
+	int64_t avg_vduration = 0;
+	int64_t avg_aduration = 0;
+	int64_t vframes = 0;
+	int64_t aframes = 0;
 	while (d->decoder_thread_run == 1)
 	{
 		int ret = 0;
@@ -162,6 +168,33 @@ static void* decoder_thread(void *data){
 			lvp_error(d->log, "receive frame error %d", ret);
 			break;
 		}
+		//check pts if NOPTS
+		if(d->iframe->pts == AV_NOPTS_VALUE){
+			if(d->iframe->width>0){
+				vframes++;
+				pre_vpts += pre_vpts/vframes; 
+				d->iframe->pts = pre_vpts;
+			}else{
+				aframes++;
+				pre_apts += pre_apts/aframes;
+				d->iframe->pts = pre_apts;
+			}
+		}else{
+			if(d->iframe->width>0){
+				pre_vpts = d->iframe->pts;
+				vframes++;
+			}else{
+				aframes++;
+				pre_apts = d->iframe->pts;
+			}
+		}
+
+//		if(d->iframe->width>0){
+//			printf("vpts:%lld duration:%lld\n",d->iframe->pts, d->iframe->pkt_duration);
+//		}else{
+//			printf("apts:%lld\n",d->iframe->pts);
+//		}
+
 		if (ret == 0) {
 			sev->data = d->iframe;
 			//video

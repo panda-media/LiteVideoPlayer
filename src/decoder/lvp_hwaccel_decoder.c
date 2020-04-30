@@ -51,6 +51,7 @@ int lvp_set_up_hwaccel_decoder(LVPDecoder* decoder)
 					break;
 				}
 			}
+			hwname = av_hwdevice_get_type_name(decoder->hw_dev_type);
 		}
 	}
 	decoder->avctx->get_format = get_hw_format;
@@ -59,6 +60,6 @@ int lvp_set_up_hwaccel_decoder(LVPDecoder* decoder)
 	if (ret != LVP_OK) {
 		return LVP_E_FATAL_ERROR;
 	}
-
+	lvp_debug(NULL,"use hw:%s",hwname);
 	return LVP_OK;;
 }

@@ -37,6 +37,7 @@ int lvp_core_set_url(LVPCore *core, const char *input){
     assert(core);
     assert(input);
     int ret = lvp_str_dump(input,&core->input_str);
+    lvp_debug(core->log,"set url: %s",input);
     return ret;
 }
 

@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 
 int main(int argc , char *argv[]){
-	//int j = 2;
+	int j = 2;
 	//while (j>0) {
 		//j--;
 		printf("%s\n", LVP_VER);
