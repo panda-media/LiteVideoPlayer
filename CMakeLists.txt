@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
 #release
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Werror -Wunused-parameter -D LVP_WIN32")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wunused-parameter -D LVP_WIN32")
 #debug
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  ")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -g -Wall  ")
 
 project(lvp)
 
@@ -22,14 +22,16 @@ link_directories("./deps/SoundTouch/")
 include_directories("/usr/local/opt/openssl/include")
 link_directories("/usr/local/opt/openssl/lib")
 
-find_library(SDL2 SDL2)
-find_library(AVFoundation AVFoundation)
-find_library(VideoToolbox VideoToolbox)
-find_library(AudioToolbox AudioToolbox)
-find_library(CoreFoundation CoreFoundation)
-find_library(CoreMedia CoreMedia)
-find_library(CoreVideo CoreVideo)
-find_library(Security Security)
+#if(CAMKE_HOST_APPLE)
+#find_library(SDL2 SDL2)
+#find_library(AVFoundation AVFoundation)
+#find_library(VideoToolbox VideoToolbox)
+#find_library(AudioToolbox AudioToolbox)
+#find_library(CoreFoundation CoreFoundation)
+#find_library(CoreMedia CoreMedia)
+#find_library(CoreVideo CoreVideo)
+#find_library(Security Security)
+#endif()
 
 add_library(lvp 
             ./src/core/lvp_array.c
@@ -81,23 +83,24 @@ target_link_libraries(
     SDL2
     SDL2main
     SoundTouch
-    ${SDL2}
-    ${AVFoundation}
-    ${VideoToolbox}
-    ${AudioToolbox}
-    ${CoreFoundation}
-    ${CoreMedia}
-    ${CoreVideo}
-    ${Security}
-    bz2
-    iconv
-    crypto
-    ssl
-    z
-    m
-    pthread
-    lzma
-   
+  #  if(CAMKE_HOST_APPLE)
+  #  ${SDL2}
+  #  ${AVFoundation}
+  #  ${VideoToolbox}
+  #  ${AudioToolbox}
+  #  ${CoreFoundation}
+  #  ${CoreMedia}
+  #  ${CoreVideo}
+  #  ${Security}
+  #  bz2
+  #  iconv
+  #  crypto
+  #  ssl
+  #  z
+  #  m
+  #  pthread
+  #  lzma
+  #  endif()
 )
 
 target_link_libraries(
@@ -112,20 +115,22 @@ target_link_libraries(
     SDL2
     SDL2main
     SoundTouch
-    ${SDL2}
-    ${AVFoundation}
-    ${VideoToolbox}
-    ${AudioToolbox}
-    ${CoreFoundation}
-    ${CoreMedia}
-    ${CoreVideo}
-    ${Security}
-    bz2
-    iconv
-    crypto
-    ssl
-    z
-    m
-    pthread
-    lzma
+   # if(CAMKE_HOST_APPLE)
+   # ${SDL2}
+   # ${AVFoundation}
+   # ${VideoToolbox}
+   # ${AudioToolbox}
+   # ${CoreFoundation}
+   # ${CoreMedia}
+   # ${CoreVideo}
+   # ${Security}
+   # bz2
+   # iconv
+   # crypto
+   # ssl
+   # z
+   # m
+   # pthread
+   # lzma
+   # endif()
 )
