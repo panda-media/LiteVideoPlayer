@@ -117,6 +117,8 @@ static void* decoder_thread(void *data){
     LVPEvent *sev = lvp_event_alloc(NULL,LVP_EVENT_DECODER_SEND_FRAME,LVP_TRUE);
     int need_req = 1;
     d->iframe = av_frame_alloc();
+	int64_t apre_pts = 0;
+	int64_t vpre_pts = 0;
 	d->sw_frame = av_frame_alloc();
 	while (d->decoder_thread_run == 1)
 	{
@@ -158,14 +160,20 @@ static void* decoder_thread(void *data){
 		lvp_mutex_lock(&d->mutex);
 		ret = avcodec_receive_frame(d->avctx, d->iframe);
 		lvp_mutex_unlock(&d->mutex);
-		if (ret < 0 && ret != AVERROR(EAGAIN)) {
+
+ 		if (ret < 0 && ret != AVERROR(EAGAIN)) {
 			lvp_error(d->log, "receive frame error %d", ret);
 			break;
 		}
+
 		if (ret == 0) {
 			sev->data = d->iframe;
 			//video
 			if (d->iframe->width > 0) {
+				if (d->iframe->pts == AV_NOPTS_VALUE) {
+					d->iframe->pts = vpre_pts + 33;//guess duration
+				}
+				vpre_pts = d->iframe->pts;
 				if (d->hw_pix_fmt == d->iframe->format) {
 					av_frame_unref(d->sw_frame);
 					int ret = av_hwframe_transfer_data(d->sw_frame, d->iframe, 0);
@@ -184,6 +192,10 @@ static void* decoder_thread(void *data){
 			}
 			else
 			{
+				if (d->iframe->pts == AV_NOPTS_VALUE) {
+					d->iframe->pts = apre_pts + 21;
+				}
+				apre_pts = d->iframe->pts;
 				LVPSENDEVENT(d->ctl, LVP_EVENT_DECODER_GOT_FRAME, d->iframe);
 			}
 		retry:

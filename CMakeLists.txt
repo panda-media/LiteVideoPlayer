@@ -19,7 +19,7 @@ link_directories("./deps/SDL2/windows/lib/x64/")
 include_directories("./deps/soundtouch/")
 link_directories("./deps/soundtouch/")
 
-add_library(lvp SHARED
+add_library(lvp 
             ./src/core/lvp_array.c
             ./src/core/lvp_avsync.c
             ./src/core/lvp_condition.c

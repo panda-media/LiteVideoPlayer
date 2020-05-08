@@ -40,7 +40,7 @@ static void got_frame(LVPAVSync *sync){
 static void sync_audio_master(LVPAVSync *sync){
     got_frame(sync);
     if(sync->aframe != NULL){
-		printf("%ld\r", sync->aframe->pts);
+		//printf("%ld\r", sync->aframe->pts);
 		//if (sync->seeked == 1 && check_is_seek_frame(sync->aframe->pts,sync->seek_time) != 1)
 		//{
 		//	av_frame_unref(sync->aframe);
@@ -71,6 +71,7 @@ static void sync_audio_master(LVPAVSync *sync){
         sync->update_video_event->data = sync->vframe;
         int ret = lvp_event_control_send_event(sync->ctl,sync->update_video_event);
         if(ret == LVP_OK){
+			printf("A-V:%06lld\r", sync->audio_time - sync->vframe->pts);
             av_frame_unref(sync->vframe);
             av_frame_free(&sync->vframe);
             sync->vframe = NULL;

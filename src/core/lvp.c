@@ -11,7 +11,7 @@ int main(int argc , char *argv[]){
 		if (argc < 2 || argc > 3) {
 			printf("use LiteVideoPlayer input.xx options \n");
 			lvp_core_set_url(core, "c:/oupt/oupt.mkv");
-			lvp_core_set_option(core, "-lvp_vcodec h264_cuvid");
+		//	lvp_core_set_option(core, "-lvp_vcodec h264_cuvid");
 			//    return -1;
 		}
 
@@ -31,7 +31,7 @@ int main(int argc , char *argv[]){
 				break;
 			}
 			lvp_sleep(10);
-			i++;
+			//i++;
 			
 		}
 		lvp_core_free(core);
