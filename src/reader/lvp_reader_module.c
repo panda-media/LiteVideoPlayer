@@ -72,6 +72,7 @@ static void* reader_thread(void *data){
             ret = av_read_frame(fmt,ipkt);
             lvp_mutex_unlock(&m->avctx_mutex);
 			ipkt->pts = av_q2d(fmt->streams[ipkt->stream_index]->time_base) * ipkt->pts*1000;
+			ipkt->duration= av_q2d(fmt->streams[ipkt->stream_index]->time_base) * ipkt->duration*1000;
             need_read = LVP_FALSE;
         }
 

@@ -4,7 +4,7 @@
 
 int main(int argc , char *argv[]){
 	int j = 2;
-	while (j>0) {
+	//while (j>0) {
 		//j--;
 		printf("%s\n", LVP_VER);
 		LVPCore* core = lvp_core_alloc();
@@ -36,6 +36,6 @@ int main(int argc , char *argv[]){
 		}
 		lvp_core_free(core);
 		SDL_Quit();
-	}
+	//}
     return 0;
 }

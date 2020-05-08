@@ -14,7 +14,7 @@ int handle_update(LVPEvent *ev,void *usrdata){
    	lvp_mutex_lock(&r->mutex);
     if (r->texture == NULL)
     {
-
+        lvp_debug(r->log,"video format:%d",f->format);
 			r->texture = SDL_CreateTexture(r->renderer, SDL_PIXELFORMAT_IYUV,
 				SDL_TEXTUREACCESS_STREAMING, f->width, f->height);
 			zero_data = (uint8_t*)lvp_mem_mallocz(f->width * f->height);
@@ -23,7 +23,7 @@ int handle_update(LVPEvent *ev,void *usrdata){
 
 	
 
-	if (f->format == AV_PIX_FMT_YUV420P) {
+	if (f->format == AV_PIX_FMT_YUV420P||f->format == AV_PIX_FMT_YUVJ420P) {
 
 		SDL_UpdateYUVTexture(r->texture, NULL,
 			f->data[0], f->linesize[0],

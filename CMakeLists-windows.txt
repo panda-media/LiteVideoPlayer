@@ -13,25 +13,13 @@ link_directories("./deps/ffmpeg/linux/lib/")
 
 include_directories("./deps/ffmpeg/windows/include/")
 link_directories("./deps/ffmpeg/windows/lib/")
-include_directories("./deps/SDL2/")
-link_directories("./deps/SDL2/lib/x64/")
+include_directories("./deps/SDL2/windows/")
+link_directories("./deps/SDL2/windows/lib/x64/")
 
 include_directories("./deps/SoundTouch/include")
 link_directories("./deps/SoundTouch/")
 
-include_directories("/usr/local/opt/openssl/include")
-link_directories("/usr/local/opt/openssl/lib")
-
-find_library(SDL2 SDL2)
-find_library(AVFoundation AVFoundation)
-find_library(VideoToolbox VideoToolbox)
-find_library(AudioToolbox AudioToolbox)
-find_library(CoreFoundation CoreFoundation)
-find_library(CoreMedia CoreMedia)
-find_library(CoreVideo CoreVideo)
-find_library(Security Security)
-
-add_library(lvp 
+add_library(lvp SHARED
             ./src/core/lvp_array.c
             ./src/core/lvp_avsync.c
             ./src/core/lvp_condition.c
@@ -81,23 +69,6 @@ target_link_libraries(
     SDL2
     SDL2main
     SoundTouch
-    ${SDL2}
-    ${AVFoundation}
-    ${VideoToolbox}
-    ${AudioToolbox}
-    ${CoreFoundation}
-    ${CoreMedia}
-    ${CoreVideo}
-    ${Security}
-    bz2
-    iconv
-    crypto
-    ssl
-    z
-    m
-    pthread
-    lzma
-   
 )
 
 target_link_libraries(
@@ -112,20 +83,7 @@ target_link_libraries(
     SDL2
     SDL2main
     SoundTouch
-    ${SDL2}
-    ${AVFoundation}
-    ${VideoToolbox}
-    ${AudioToolbox}
-    ${CoreFoundation}
-    ${CoreMedia}
-    ${CoreVideo}
-    ${Security}
-    bz2
-    iconv
-    crypto
-    ssl
     z
     m
     pthread
-    lzma
 )
