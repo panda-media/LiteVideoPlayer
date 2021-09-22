@@ -59,4 +59,4 @@ lvp_core_play(core);
 ```
 
 ## License
-MIT license.
+LGPL license.
